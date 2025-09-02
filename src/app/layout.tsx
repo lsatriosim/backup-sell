@@ -12,9 +12,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <Header />
-        <main className="container-responsive py-8">{children}</main>
-        <Footer />
+        <main className="container-responsive">{children}</main>
       </body>
     </html>
   );

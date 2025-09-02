@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useStore } from '@/lib/store';
 import { CircleHelp } from 'lucide-react';
+import Image from "next/image";
 
 export default function Header() {
   const { currentUser } = useStore();
@@ -10,10 +11,13 @@ export default function Header() {
       <div className="container-responsive flex items-center justify-between py-4">
         <Link href="/" className="flex items-center gap-2">
           <div className="bg-surface-secondary ml-4 rounded-full flex items-center justify-center w-20 h-20">
-            <img
+            <Image
               src="/backupsell_logo.png"
               alt="BackupSell Logo"
-              className="h-16"
+              width={64}
+              height={64}
+              className="h-16 w-16"
+              priority
             />
           </div>
           <div className="font-semibold text-2xl text-neutral-100">Backup Sell</div>
