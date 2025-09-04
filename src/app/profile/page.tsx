@@ -2,14 +2,40 @@
 
 import Link from "next/link";
 import { User, LogOut, Pencil } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import apiClient from "@/lib/apiClient";
+import { ProfileUser } from "../model/AuthModel";
 
 export default function ProfilePage() {
-  // Example user data (replace with your real data source / auth context)
-  const user = {
-    name: "John Doe",
-    email: "john.doe@email.com",
-    phone: "+1 555-123-4567",
-  };
+  const [user, setUserProfile] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    id: ""
+  })
+
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState("");
+
+  const fetchUserProfile = useCallback(async () => {
+    setLoading(true);
+
+    try {
+      const response = await apiClient.get(`/api/auth/get-profile`);
+      const userProfile: ProfileUser = response.data;
+      setUserProfile(userProfile);
+    } catch (err) {
+      setApiError(`Failed to fetch user profile`);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (user.name == "") {
+      fetchUserProfile()
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-neutral-50">

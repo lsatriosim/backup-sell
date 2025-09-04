@@ -63,11 +63,11 @@ export default function RegisterPage() {
     }
 
     useEffect(() => {
-    if (errorMessage) {
-      alert(errorMessage);
-      setErrorMessage("");
-    }
-  }, [errorMessage]);
+        if (errorMessage) {
+            alert(errorMessage);
+            setErrorMessage("");
+        }
+    }, [errorMessage]);
 
     return (
         <div className="flex flex-col min-h-screen bg-white">
