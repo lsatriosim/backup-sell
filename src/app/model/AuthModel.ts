@@ -4,3 +4,8 @@ export interface RegisterRequest {
     phone: string;
     password: string;
 }
+
+export interface LoginRequest {
+    email: string;
+    password: string;
+}
