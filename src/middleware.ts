@@ -15,7 +15,7 @@ export function middleware(req: NextRequest) {
   }
 
   const ua = req.headers.get("user-agent") || "";
-  const isMobile = /mobile|android|iphone|ipad/i.test(ua);
+  // const isMobile = /mobile|android|iphone|ipad/i.test(ua);
 
   // if (!isMobile) {
   //   return NextResponse.redirect(new URL("/desktop-warning", req.url));

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash, faSpinner } from "@fortawesome/free-solid-svg-icons";
-import { LoginRequest, RegisterRequest } from "../model/AuthModel";
+import { LoginRequest } from "../model/AuthModel";
 import apiClient from "@/lib/apiClient";
 import axios from "axios";
 import { useRouter } from "next/navigation";
@@ -39,7 +39,7 @@ export default function LoginPage() {
                 '/api/auth/login',
                 requestBody
             );
-            router.push('/about');
+            router.push('/home');
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 setErrorMessage(err.response?.data?.data?.error);
@@ -125,7 +125,7 @@ export default function LoginPage() {
                 </form>
 
                 <p className="mt-4 text-center text-sm text-gray-600">
-                    Doesn't have an account?{" "}
+                    Doesn&apos;t have an account?{" "}
                     <a href="/login" className="text-blue-600 font-medium">
                         Sign Up
                     </a>

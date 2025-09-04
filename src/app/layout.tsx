@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import BottomNavigationBar from '@/components/BottomNavigationBar';
 
 export const metadata: Metadata = {
   title: 'Backup Sell — Community Resell Board',
@@ -11,8 +10,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>
-        <main className="container-responsive">{children}</main>
+      <body className='font-rubik'>
+        <main className="pb-16 bg-neutral-100 min-h-screen w-full">{children}</main>
+        <BottomNavigationBar />
       </body>
     </html>
   );

@@ -50,7 +50,7 @@ export default function RegisterPage() {
                 '/api/auth/register',
                 requestBody
             );
-            router.push('/about');
+            router.push('/home');
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 setErrorMessage(err.response?.data?.data?.error);

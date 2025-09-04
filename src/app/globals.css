@@ -10,7 +10,8 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-
+  --font-rubik: "Rubik", sans-serif;
+  --font-roboto-slab: "Roboto Slab", serif;
   --color-surface-primary: oklch(0.5928 0.2212 269.85);
   --color-surface-secondary: oklch(0.8978 0.020956 355.2083);
 }
