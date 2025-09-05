@@ -31,6 +31,12 @@ export default function RegisterPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        const isPhoneValid = !form.phone.startsWith("08");
+        if(!isPhoneValid) {
+            alert("Wrong phone number format");
+            return;
+        }
+
         if (form.password !== form.confirmPassword) {
             setErrorMessage("Passwords do not match");
             return;
@@ -114,7 +120,7 @@ export default function RegisterPage() {
                     <input
                         type="tel"
                         name="phone"
-                        placeholder="Phone Number"
+                        placeholder="Phone Number (e.g. 628532454)"
                         value={form.phone}
                         onChange={handleChange}
                         disabled={loading}

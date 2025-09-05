@@ -10,6 +10,11 @@ export interface LoginRequest {
     password: string;
 }
 
+export interface UpdateProfileRequest {
+    name: string;
+    phone: string;
+}
+
 export interface ProfileUser {
     email: string;
     name: string;
