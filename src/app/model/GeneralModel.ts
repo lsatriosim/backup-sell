@@ -3,3 +3,8 @@ export interface BackendResponse<T> {
     data: T;
     message: string;
 }
+
+export interface TimeStamp {
+    createdAt: Date;
+    updatedAt: Date;
+}

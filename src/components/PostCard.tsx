@@ -1,0 +1,64 @@
+"use client";
+
+import { PostItemResponse } from "@/app/model/PostModel";
+import { CalendarDays, Clock, ThumbsUp } from "lucide-react";
+import { format } from "date-fns";
+
+interface PostCardProps {
+  post: PostItemResponse;
+  boosted?: boolean; // to show "Boosted" header
+}
+
+export default function PostCard({ post, boosted = false }: PostCardProps) {
+  const startDate = new Date(post.startDateTime);
+  const endDate = new Date(post.endDateTime);
+
+  const formattedDate = format(startDate, "EEEE, d MMM yyyy");
+  const formattedTime = `${format(startDate, "HH:mm")} - ${format(endDate, "HH:mm")}`;
+
+  return (
+    <div className="rounded-xl shadow-sm border border-gray-200 overflow-hidden bg-white">
+      {boosted && (
+        <div className="bg-blue-600 text-white px-3 py-1 flex items-center gap-1 text-sm font-medium">
+          <ThumbsUp className="h-4 w-4" />
+          Boosted
+        </div>
+      )}
+
+      <div className="p-4">
+        {/* Title and sport */}
+        <div className="flex items-start justify-between">
+          <h2 className="text-lg font-bold text-gray-900">
+            {post.location.name}
+          </h2>
+          <span className="text-blue-600 font-semibold text-sm">Padel</span>
+        </div>
+
+        {/* Address */}
+        <p className="text-sm text-gray-600">{post.location.region.name}</p>
+        <p className="text-xs text-gray-500">{post.location.addressDescription}</p>
+
+        {/* Date & Time */}
+        <div className="flex items-center gap-2 text-sm text-gray-700 mt-2">
+          <CalendarDays className="h-4 w-4 text-gray-500" />
+          <span>{formattedDate}</span>
+          <span className="text-gray-400">•</span>
+          <Clock className="h-4 w-4 text-gray-500" />
+          <span>{formattedTime}</span>
+        </div>
+
+        {/* Footer */}
+        <div className="flex justify-between items-center mt-4">
+          <div className="h-10 w-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">
+            {post.seller.name.charAt(0)}
+          </div>
+          <p className="text-gray-900 font-medium">
+            {post.itemCount > 1
+              ? `${post.itemCount} Courts - Rp ${post.minPrice.toLocaleString()}/pcs`
+              : `Rp ${post.minPrice.toLocaleString()}`}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
