@@ -1,87 +1,76 @@
 'use client';
 import PostCard from "@/components/PostCard";
 import { PostItemResponse } from "../model/PostModel";
-import { useState } from "react";
-import { CalendarDaysIcon } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { CalendarDaysIcon, CalendarIcon, Clock, MapIcon, SearchIcon } from "lucide-react";
 import DatePicker from "react-datepicker";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
+import { OnSelectHandler } from "react-day-picker";
+import apiClient from "@/lib/apiClient";
 
 export default function MarketplacePage() {
     const [search, setSearch] = useState("");
-    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-    const [showDatePopUp, setShowDatePopUp] = useState(false);
+    const [date, setDate] = useState<Date | undefined>(new Date())
+    const [open, setOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [apiError, setApiError] = useState("");
 
-    const [posts] = useState<PostItemResponse[]>([
-        {
-            id: "1",
-            userId: "u1",
-            locationId: "l1",
-            minPrice: 740000,
-            itemCount: 2,
-            startDateTime: new Date("2025-09-03T13:00:00"),
-            endDateTime: new Date("2025-09-03T15:00:00"),
-            status: "active",
-            location: {
-                id: "l1",
-                name: "Wins Arena Pulogadung",
-                url: "",
-                addressDescription: "Jln. Daan Mogot No 16, RT 11, Kec Kalideres",
-                region: {
-                    id: "r1",
-                    name: "Jakarta Barat",
-                    city: { id: "c1", name: "Jakarta Barat" },
-                },
-            },
-            seller: {
-                id: "u1",
-                name: "Leo",
-                email: "leo@mail.com",
-                phone: "0812345678"
-            },
-            offerCount: 0,
-            createdAt: new Date(),
-            updatedAt: new Date(),
+    const updateSelectedDate: OnSelectHandler<Date> = useCallback(
+        (selected, _triggerDate, _modifiers, _e) => {
+            if (!selected) return;
+            setDate(selected);
+            setOpen(false);
         },
-        {
-            id: "2",
-            userId: "u1",
-            locationId: "l1",
-            minPrice: 740000,
-            itemCount: 1,
-            startDateTime: new Date("2025-09-03T13:00:00"),
-            endDateTime: new Date("2025-09-03T15:00:00"),
-            status: "active",
-            location: {
-                id: "l1",
-                name: "Max Padel",
-                url: "",
-                addressDescription: "Jln. Daan Mogot No 16, RT 11, Kec Kalideres",
-                region: {
-                    id: "r1",
-                    name: "Jakarta Barat",
-                    city: { id: "c1", name: "Jakarta Barat" },
-                },
-            },
-            seller: {
-                id: "u1",
-                name: "Leo",
-                email: "leo@mail.com",
-                phone: "0812345678"
-            },
-            offerCount: 0,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-        },
-    ]);
+        []
+    );
 
-    // Filter posts based on search (FE only)
+    const [posts, setPosts] = useState<PostItemResponse[]>([]);
+
     const filteredPosts = posts.filter((post) =>
         post.location.name.toLowerCase().includes(search.toLowerCase())
     );
 
+    // ======= FILTER STATES =======
+    const regionFilterOption = [
+        "Jakarta",
+        "Jakarta Barat",
+        "Jakarta Timur",
+        "Jakarta Selatan",
+    ];
+    const sportFilterOption = ["Padel", "Badminton", "Tennis"];
+    const timeFilterOption = ["All Day", "Morning", "Afternoon", "Evening"];
+
+    const [regionFilter, setRegionFilter] = useState<string>(regionFilterOption[0]);
+    const [sportFilter, setSportFilter] = useState<string>(sportFilterOption[0]);
+    const [timeFilter, setTimeFilter] = useState<string>(timeFilterOption[0]);
+
+    const fetchPostList = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await apiClient.get(`/api/post/list`);
+            console.log(response.data);
+            const postList: PostItemResponse[] = response.data;
+            setPosts(postList);
+        } catch (err) {
+            setApiError(`Failed to fetch post list`);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (posts.length == 0) {
+            fetchPostList();
+        }
+    }, [fetchPostList, posts]);
+
     return (
         <div className="min-h-screen bg-neutral-100">
             {/* Header with Search and DatePicker */}
-            <div className="bg-blue-600 p-4 flex gap-3 items-center">
+            <div className="bg-surface-primary p-4 flex gap-3 items-center">
                 <input
                     type="email"
                     name="Search"
@@ -92,17 +81,108 @@ export default function MarketplacePage() {
                 />
 
                 {/* DatePicker trigger */}
-                <button onClick={ () => {
-                    setShowDatePopUp(true);
-                }}>
-                    <CalendarDaysIcon className="h-6 w-6 text-neutral-50" />
-                </button>
+                <Popover open={open} onOpenChange={setOpen}>
+                    <PopoverTrigger asChild>
+                        <CalendarDaysIcon className="h-6 w-6 text-neutral-50" />
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                        <Calendar
+                            mode="single"
+                            selected={date}
+                            required
+                            onSelect={updateSelectedDate} // custom handler
+                        />
+                    </PopoverContent>
+                </Popover>
+            </div>
+
+            <div className="pt-4.5 pb-6 pl-4 pr-4">
+                {date && (
+                    <h2 className="text-2xl font-bold">
+                        {format(date, "EEEE, d MMM yyyy")}
+                    </h2>
+                )}
+            </div>
+
+            {/* FILTER ROW */}
+            <div className="flex gap-3 px-4 overflow-x-auto">
+                {/* Region Filter */}
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button
+                            variant="outline"
+                            className="rounded-full flex items-center gap-2 min-w-[120px] justify-center overflow-hidden"
+                        >
+                            <MapIcon className="h-4 w-4 shrink-0" />
+                            <span className="truncate whitespace-nowrap w-22">{regionFilter}</span>
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-40 p-2">
+                        {regionFilterOption.map((region) => (
+                            <div
+                                key={region}
+                                className="cursor-pointer p-2 rounded hover:bg-neutral-100"
+                                onClick={() => setRegionFilter(region)}
+                            >
+                                {region}
+                            </div>
+                        ))}
+                    </PopoverContent>
+                </Popover>
+
+                {/* Sport Filter */}
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button
+                            variant="outline"
+                            className="rounded-full flex items-center gap-2 min-w-[100px] justify-center overflow-hidden"
+                        >
+                            <SearchIcon className="h-4 w-4 shrink-0" />
+                            <span className="truncate whitespace-nowrap">{sportFilter}</span>
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-40 p-2">
+                        {sportFilterOption.map((sport) => (
+                            <div
+                                key={sport}
+                                className="cursor-pointer p-2 rounded hover:bg-neutral-100"
+                                onClick={() => setSportFilter(sport)}
+                            >
+                                {sport}
+                            </div>
+                        ))}
+                    </PopoverContent>
+                </Popover>
+
+                {/* Time Filter */}
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button
+                            variant="outline"
+                            className="rounded-full flex items-center gap-2 min-w-[120px] justify-center overflow-hidden"
+                        >
+                            <Clock className="h-4 w-4 shrink-0" />
+                            <span className="truncate whitespace-nowrap">{timeFilter}</span>
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-40 p-2">
+                        {timeFilterOption.map((time) => (
+                            <div
+                                key={time}
+                                className="cursor-pointer p-2 rounded hover:bg-neutral-100"
+                                onClick={() => setTimeFilter(time)}
+                            >
+                                {time}
+                            </div>
+                        ))}
+                    </PopoverContent>
+                </Popover>
             </div>
 
             {/* Posts */}
             <div className="p-4 space-y-4">
                 {filteredPosts.length > 0 ? (
-                    filteredPosts.map((post) => <PostCard key={post.id} post={post} />)
+                    filteredPosts.map((post) => <PostCard key={post.id} post={post} boosted />)
                 ) : (
                     <p className="text-center text-gray-500 mt-6">No posts found</p>
                 )}

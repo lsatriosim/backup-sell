@@ -19,7 +19,7 @@ export default function PostCard({ post, boosted = false }: PostCardProps) {
   return (
     <div className="rounded-xl shadow-sm border border-gray-200 overflow-hidden bg-white">
       {boosted && (
-        <div className="bg-blue-600 text-white px-3 py-1 flex items-center gap-1 text-sm font-medium">
+        <div className="bg-surface-primary text-white px-3 py-1 flex items-center gap-1 text-sm font-medium">
           <ThumbsUp className="h-4 w-4" />
           Boosted
         </div>
@@ -31,7 +31,7 @@ export default function PostCard({ post, boosted = false }: PostCardProps) {
           <h2 className="text-lg font-bold text-gray-900">
             {post.location.name}
           </h2>
-          <span className="text-blue-600 font-semibold text-sm">Padel</span>
+          <span className="text-surface-primary font-semibold text-sm">Padel</span>
         </div>
 
         {/* Address */}
@@ -49,7 +49,7 @@ export default function PostCard({ post, boosted = false }: PostCardProps) {
 
         {/* Footer */}
         <div className="flex justify-between items-center mt-4">
-          <div className="h-10 w-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">
+          <div className="h-10 w-10 rounded-full bg-surface-primary text-white flex items-center justify-center font-bold">
             {post.seller.name.charAt(0)}
           </div>
           <p className="text-gray-900 font-medium">
