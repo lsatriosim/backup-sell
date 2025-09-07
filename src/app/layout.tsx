@@ -11,7 +11,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className='font-rubik'>
-        <main className="pb-16 bg-neutral-100 min-h-screen w-full">{children}</main>
+        <main className="pb-20 bg-neutral-100 min-h-screen w-full">{children}</main>
         <BottomNavigationBar />
       </body>
     </html>

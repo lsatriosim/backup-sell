@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { OnSelectHandler } from "react-day-picker";
 import apiClient from "@/lib/apiClient";
+import PostCardSkeleton from "@/components/PostCardSkeleton";
 
 export default function MarketplacePage() {
     const [search, setSearch] = useState("");
@@ -27,12 +28,6 @@ export default function MarketplacePage() {
         []
     );
 
-    const [posts, setPosts] = useState<PostItemResponse[]>([]);
-
-    const filteredPosts = posts.filter((post) =>
-        post.location.name.toLowerCase().includes(search.toLowerCase())
-    );
-
     // ======= FILTER STATES =======
     const regionFilterOption = [
         "Jakarta",
@@ -46,6 +41,34 @@ export default function MarketplacePage() {
     const [regionFilter, setRegionFilter] = useState<string>(regionFilterOption[0]);
     const [sportFilter, setSportFilter] = useState<string>(sportFilterOption[0]);
     const [timeFilter, setTimeFilter] = useState<string>(timeFilterOption[0]);
+
+    const [posts, setPosts] = useState<PostItemResponse[]>([]);
+
+    const filteredPosts = posts.filter((post) => {
+        const start = new Date(post.startDateTime);
+        const hour = start.getHours();
+
+        // ✅ Region & sport filter
+        const matchesRegion = post.location.name
+            .toLowerCase()
+            .includes(search.toLowerCase());
+        const matchesSport =
+            sportFilter === sportFilterOption[0] || post.sportType === sportFilter;
+
+        // ✅ Time filter
+        let matchesTime = true;
+        if (timeFilter === "Morning") {
+            matchesTime = hour >= 6 && hour < 12;
+        } else if (timeFilter === "Afternoon") {
+            matchesTime = hour >= 12 && hour < 18;
+        } else if (timeFilter === "Evening") {
+            matchesTime = hour >= 18 || hour < 6; // evening wraps past midnight
+        }
+        // if "All Day", matchesTime stays true
+
+        return matchesRegion && matchesSport && matchesTime;
+    }
+    );
 
     const fetchPostList = useCallback(async () => {
         setLoading(true);
@@ -96,7 +119,7 @@ export default function MarketplacePage() {
                 </Popover>
             </div>
 
-            <div className="pt-4.5 pb-6 pl-4 pr-4">
+            <div className="pt-4.5 pb-3 pl-4 pr-4">
                 {date && (
                     <h2 className="text-2xl font-bold">
                         {format(date, "EEEE, d MMM yyyy")}
@@ -181,7 +204,13 @@ export default function MarketplacePage() {
 
             {/* Posts */}
             <div className="p-4 space-y-4">
-                {filteredPosts.length > 0 ? (
+                {loading ? (
+                    <>
+                        <PostCardSkeleton />
+                        <PostCardSkeleton />
+                        <PostCardSkeleton />
+                    </>
+                ) : filteredPosts.length > 0 ? (
                     filteredPosts.map((post) => <PostCard key={post.id} post={post} />)
                 ) : (
                     <p className="text-center text-gray-500 mt-6">No posts found</p>

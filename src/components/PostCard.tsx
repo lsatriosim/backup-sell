@@ -67,7 +67,7 @@ export default function PostCard({ post }: PostCardProps) {
                             </div>
                         )}
                         {/* Min price */}
-                        <p className="text-gray-900 font-bold text-lg">
+                        <p className="text-gray-900 font-semibold text-lg">
                             {post.itemCount > 1
                                 ? `${post.itemCount} Courts - Rp ${post.minPrice.toLocaleString()}/pcs`
                                 : `Rp ${post.minPrice.toLocaleString()}`}
