@@ -182,7 +182,7 @@ export default function MarketplacePage() {
             {/* Posts */}
             <div className="p-4 space-y-4">
                 {filteredPosts.length > 0 ? (
-                    filteredPosts.map((post) => <PostCard key={post.id} post={post} boosted />)
+                    filteredPosts.map((post) => <PostCard key={post.id} post={post} />)
                 ) : (
                     <p className="text-center text-gray-500 mt-6">No posts found</p>
                 )}

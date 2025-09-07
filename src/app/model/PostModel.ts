@@ -27,16 +27,16 @@ export interface PostDto {
     itemCount: number;
     startDateTime: Date;
     endDateTime: Date;
+    sportType: string;
 }
 
 export interface PostItemResponse extends PostDto, TimeStamp  {
     id: string;
     minPrice: number;
-    startDateTime: Date;
-    endDateTime: Date;
     status: string;
-    itemCount: number;
     location: LocationDTO;
     seller: ProfileUser;
     offerCount: number;
+    maxOfferPrice: number;
+    isBoosted: boolean;
 }
