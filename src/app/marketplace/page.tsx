@@ -103,7 +103,11 @@ export default function MarketplacePage() {
     const fetchPostList = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await apiClient.get(`/api/post/list`);
+            if (!date) {
+                return;
+            }
+            const formattedDate = format(date, "dd-MM-yyyy");
+            const response = await apiClient.get(`/api/post/list/${formattedDate}`);
             console.log(response.data);
             const postList: PostItemResponse[] = response.data;
             setPosts(postList);
@@ -112,13 +116,11 @@ export default function MarketplacePage() {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [date]);
 
     useEffect(() => {
-        if (posts.length == 0) {
-            fetchPostList();
-        }
-    }, [fetchPostList, posts]);
+        fetchPostList();
+    }, [fetchPostList]);
 
     return (
         <div className="min-h-screen bg-neutral-100">
