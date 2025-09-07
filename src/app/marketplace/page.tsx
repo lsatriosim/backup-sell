@@ -15,7 +15,10 @@ import PostCardSkeleton from "@/components/PostCardSkeleton";
 export default function MarketplacePage() {
     const [search, setSearch] = useState("");
     const [date, setDate] = useState<Date | undefined>(new Date())
-    const [open, setOpen] = useState(false);
+    const [openDatePicker, setOpenDatePicker] = useState(false);
+    const [openTimeFilterDropdown, setTimeFilterDropdown] = useState(false);
+    const [openSportFilterDropdown, setSportFilterDropdown] = useState(false);
+    const [openRegionFilterDropdown, setRegionFilterDropdown] = useState(false);
     const [loading, setLoading] = useState(false);
     const [apiError, setApiError] = useState("");
 
@@ -23,7 +26,34 @@ export default function MarketplacePage() {
         (selected, _triggerDate, _modifiers, _e) => {
             if (!selected) return;
             setDate(selected);
-            setOpen(false);
+            setOpenDatePicker(false);
+        },
+        []
+    );
+
+    const updateTimeFilter = useCallback(
+        (selected: string) => {
+            if (!selected) return;
+            setTimeFilter(selected);
+            setTimeFilterDropdown(false);
+        },
+        []
+    );
+
+    const updateSportFilter = useCallback(
+        (selected: string) => {
+            if (!selected) return;
+            setSportFilter(selected);
+            setSportFilterDropdown(false);
+        },
+        []
+    );
+
+    const updateRegionFilter = useCallback(
+        (selected: string) => {
+            if (!selected) return;
+            setRegionFilter(selected);
+            setRegionFilterDropdown(false);
         },
         []
     );
@@ -104,7 +134,7 @@ export default function MarketplacePage() {
                 />
 
                 {/* DatePicker trigger */}
-                <Popover open={open} onOpenChange={setOpen}>
+                <Popover open={openDatePicker} onOpenChange={setOpenDatePicker}>
                     <PopoverTrigger asChild>
                         <CalendarDaysIcon className="h-6 w-6 text-neutral-50" />
                     </PopoverTrigger>
@@ -130,7 +160,7 @@ export default function MarketplacePage() {
             {/* FILTER ROW */}
             <div className="flex gap-3 px-4 overflow-x-auto">
                 {/* Region Filter */}
-                <Popover>
+                <Popover open={openRegionFilterDropdown} onOpenChange={setRegionFilterDropdown}>
                     <PopoverTrigger asChild>
                         <Button
                             variant="outline"
@@ -145,7 +175,7 @@ export default function MarketplacePage() {
                             <div
                                 key={region}
                                 className="cursor-pointer p-2 rounded hover:bg-neutral-100"
-                                onClick={() => setRegionFilter(region)}
+                                onClick={() => updateRegionFilter(region)}
                             >
                                 {region}
                             </div>
@@ -154,7 +184,7 @@ export default function MarketplacePage() {
                 </Popover>
 
                 {/* Sport Filter */}
-                <Popover>
+                <Popover open={openSportFilterDropdown} onOpenChange={setSportFilterDropdown}>
                     <PopoverTrigger asChild>
                         <Button
                             variant="outline"
@@ -169,7 +199,7 @@ export default function MarketplacePage() {
                             <div
                                 key={sport}
                                 className="cursor-pointer p-2 rounded hover:bg-neutral-100"
-                                onClick={() => setSportFilter(sport)}
+                                onClick={() => updateSportFilter(sport)}
                             >
                                 {sport}
                             </div>
@@ -178,7 +208,7 @@ export default function MarketplacePage() {
                 </Popover>
 
                 {/* Time Filter */}
-                <Popover>
+                <Popover open={openTimeFilterDropdown} onOpenChange={setTimeFilterDropdown}>
                     <PopoverTrigger asChild>
                         <Button
                             variant="outline"
@@ -193,7 +223,7 @@ export default function MarketplacePage() {
                             <div
                                 key={time}
                                 className="cursor-pointer p-2 rounded hover:bg-neutral-100"
-                                onClick={() => setTimeFilter(time)}
+                                onClick={() => updateTimeFilter(time)}
                             >
                                 {time}
                             </div>
