@@ -12,6 +12,7 @@ import { OnSelectHandler } from "react-day-picker";
 import apiClient from "@/lib/apiClient";
 import PostCardSkeleton from "@/components/PostCardSkeleton";
 import { CityRegionFilterOptionResponse } from "../../model/LocationModel";
+import FilterRowSkeleton from "@/components/FilterRowSkeleton";
 
 export default function MarketplacePage() {
     const [search, setSearch] = useState("");
@@ -184,7 +185,10 @@ export default function MarketplacePage() {
             </div>
 
             {/* FILTER ROW */}
-            <div className="flex gap-3 px-4 overflow-x-auto">
+            {filterLoading ? (
+                <FilterRowSkeleton />
+            ) : (
+                <div className="flex gap-3 px-4 overflow-x-auto">
                 {/* Region Filter */}
                 <Popover open={openRegionFilterDropdown} onOpenChange={setRegionFilterDropdown}>
                     <PopoverTrigger asChild>
@@ -281,6 +285,8 @@ export default function MarketplacePage() {
                     </PopoverContent>
                 </Popover>
             </div>
+            )
+            }
 
             {/* Posts */}
             <div className="p-4 space-y-4">
