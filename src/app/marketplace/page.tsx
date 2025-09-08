@@ -5,7 +5,7 @@ import Link from "next/link";
 
 const menus = [
   { name: "Sport Court", href: "/marketplace/sport-court", icon: BicepsFlexed, disabled: false },
-  { name: "Concert / Cinema Ticket", href: "/concert-and-cinema-ticket", icon: Clapperboard, disabled: true },
+  { name: "Concert / Cinema Ticket (COMING SOON)", href: "/concert-and-cinema-ticket", icon: Clapperboard, disabled: true },
 ];
 
 export default function MarketplacePage() {
