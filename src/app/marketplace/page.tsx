@@ -1,7 +1,7 @@
 'use client';
 import PostCard from "@/components/PostCard";
 import { PostItemResponse } from "../model/PostModel";
-import { useCallback, useEffect, useState } from "react";
+import { SetStateAction, useCallback, useEffect, useState } from "react";
 import { CalendarDaysIcon, CalendarIcon, Clock, MapIcon, SearchIcon } from "lucide-react";
 import DatePicker from "react-datepicker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -11,6 +11,7 @@ import { format } from "date-fns";
 import { OnSelectHandler } from "react-day-picker";
 import apiClient from "@/lib/apiClient";
 import PostCardSkeleton from "@/components/PostCardSkeleton";
+import { CityRegionFilterOptionResponse } from "../model/LocationModel";
 
 export default function MarketplacePage() {
     const [search, setSearch] = useState("");
@@ -20,6 +21,10 @@ export default function MarketplacePage() {
     const [openSportFilterDropdown, setSportFilterDropdown] = useState(false);
     const [openRegionFilterDropdown, setRegionFilterDropdown] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [filterLoading, setFilterLoading] = useState(false);
+    type LocationFilter = { id: string; name: string; type: "city" | "region" } | null;
+    const [locationFilter, setLocationFilter] = useState<LocationFilter>(null);
+    const [locationOptions, setLocationOptions] = useState<CityRegionFilterOptionResponse[]>([]);
     const [apiError, setApiError] = useState("");
 
     const updateSelectedDate: OnSelectHandler<Date> = useCallback(
@@ -50,25 +55,17 @@ export default function MarketplacePage() {
     );
 
     const updateRegionFilter = useCallback(
-        (selected: string) => {
-            if (!selected) return;
-            setRegionFilter(selected);
+        (selected: LocationFilter) => {
+            setLocationFilter(selected);
             setRegionFilterDropdown(false);
         },
         []
     );
 
     // ======= FILTER STATES =======
-    const regionFilterOption = [
-        "Jakarta",
-        "Jakarta Barat",
-        "Jakarta Timur",
-        "Jakarta Selatan",
-    ];
     const sportFilterOption = ["Padel", "Badminton", "Tennis"];
     const timeFilterOption = ["All Day", "Morning", "Afternoon", "Evening"];
 
-    const [regionFilter, setRegionFilter] = useState<string>(regionFilterOption[0]);
     const [sportFilter, setSportFilter] = useState<string>(sportFilterOption[0]);
     const [timeFilter, setTimeFilter] = useState<string>(timeFilterOption[0]);
 
@@ -77,6 +74,15 @@ export default function MarketplacePage() {
     const filteredPosts = posts.filter((post) => {
         const start = new Date(post.startDateTime);
         const hour = start.getHours();
+
+        let matchesLocation = true;
+        if (locationFilter) {
+            if (locationFilter.type === "city") {
+                matchesLocation = post.location.region.city.id === locationFilter.id;
+            } else if (locationFilter.type === "region") {
+                matchesLocation = post.location.region.id === locationFilter.id;
+            }
+        }
 
         // ✅ Region & sport filter
         const matchesRegion = post.location.name
@@ -92,13 +98,25 @@ export default function MarketplacePage() {
         } else if (timeFilter === "Afternoon") {
             matchesTime = hour >= 12 && hour < 18;
         } else if (timeFilter === "Evening") {
-            matchesTime = hour >= 18 || hour < 6; // evening wraps past midnight
+            matchesTime = hour >= 18 || hour < 6;
         }
-        // if "All Day", matchesTime stays true
 
-        return matchesRegion && matchesSport && matchesTime;
+        return matchesRegion && matchesSport && matchesTime && matchesLocation;
     }
     );
+
+    const fetchLocationByRegions = useCallback(async () => {
+        setFilterLoading(true);
+        try {
+            const response = await apiClient.get(`/api/location/get-cities-by-regions`);
+            const data: CityRegionFilterOptionResponse[] = response.data;
+            setLocationOptions(data);
+        } catch (err) {
+            setApiError(`Failed to fetch location filter option`);
+        } finally {
+            setFilterLoading(false);
+        }
+    }, []);
 
     const fetchPostList = useCallback(async () => {
         setLoading(true);
@@ -121,6 +139,10 @@ export default function MarketplacePage() {
     useEffect(() => {
         fetchPostList();
     }, [fetchPostList]);
+
+    useEffect(() => {
+        fetchLocationByRegions();
+    }, [fetchLocationByRegions]);
 
     return (
         <div className="min-h-screen bg-neutral-100">
@@ -145,6 +167,8 @@ export default function MarketplacePage() {
                             mode="single"
                             selected={date}
                             required
+                            startMonth={new Date()}
+                            disabled={{ before: new Date() }}
                             onSelect={updateSelectedDate} // custom handler
                         />
                     </PopoverContent>
@@ -166,22 +190,46 @@ export default function MarketplacePage() {
                     <PopoverTrigger asChild>
                         <Button
                             variant="outline"
-                            className="rounded-full flex items-center gap-2 min-w-[120px] justify-center overflow-hidden"
+                            className="rounded-full flex items-center gap-2 min-w-[140px] justify-center overflow-hidden"
                         >
                             <MapIcon className="h-4 w-4 shrink-0" />
-                            <span className="truncate whitespace-nowrap w-22">{regionFilter}</span>
+                            <span className="truncate whitespace-nowrap">
+                                {locationFilter ? locationFilter.name : "All Locations"}
+                            </span>
                         </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-40 p-2">
-                        {regionFilterOption.map((region) => (
+                    <PopoverContent className="w-56 p-2 max-h-60 overflow-y-auto">
+                        {/* City + regions */}
+                        <div>
                             <div
-                                key={region}
-                                className="cursor-pointer p-2 rounded hover:bg-neutral-100"
-                                onClick={() => updateRegionFilter(region)}
-                            >
-                                {region}
+                                    className="cursor-pointer font-semibold p-2 hover:bg-neutral-100 rounded"
+                                    onClick={() => updateRegionFilter(null)}
+                                >
+                                    All Locations
+                                </div>
+
+                            {locationOptions.map((city) => (
+                            <div key={city.id}>
+                                <div
+                                    className="cursor-pointer font-semibold p-2 hover:bg-neutral-100 rounded"
+                                    onClick={() => updateRegionFilter({ id: city.id, name: city.name, type: "city" })}
+                                >
+                                    {city.name} (All)
+                                </div>
+                                {city.regions.map((region) => (
+                                    <div
+                                        key={region.id}
+                                        className="cursor-pointer ml-4 p-2 hover:bg-neutral-100 rounded"
+                                        onClick={() =>
+                                            updateRegionFilter({ id: region.id, name: region.name, type: "region" })
+                                        }
+                                    >
+                                        {region.name}
+                                    </div>
+                                ))}
                             </div>
                         ))}
+                        </div>
                     </PopoverContent>
                 </Popover>
 
