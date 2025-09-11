@@ -6,9 +6,10 @@ import { format } from "date-fns";
 
 interface PostCardProps {
     post: PostItemResponse;
+    onClick: (id: string) => void;
 }
 
-export default function PostCard({ post }: PostCardProps) {
+export default function PostCard({ post, onClick }: PostCardProps) {
     const startDate = new Date(post.startDateTime);
     const endDate = new Date(post.endDateTime);
 
@@ -16,7 +17,7 @@ export default function PostCard({ post }: PostCardProps) {
     const formattedTime = `${format(startDate, "HH:mm")} - ${format(endDate, "HH:mm")}`;
 
     return (
-        <div className="rounded-xl shadow-sm border border-gray-200 overflow-hidden bg-white">
+        <div onClick={() => onClick(post.id)} className="rounded-xl shadow-sm border border-gray-200 overflow-hidden bg-white">
             {post.isBoosted && (
                 <div className="bg-surface-primary text-white px-3 py-1 flex items-center gap-1 text-sm font-medium">
                     <ThumbsUp className="h-4 w-4" />

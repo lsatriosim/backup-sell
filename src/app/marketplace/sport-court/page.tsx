@@ -1,9 +1,8 @@
 'use client';
 import PostCard from "@/components/PostCard";
 import { PostItemResponse } from "../../model/PostModel";
-import { SetStateAction, useCallback, useEffect, useState } from "react";
-import { CalendarDaysIcon, CalendarIcon, Clock, MapIcon, SearchIcon } from "lucide-react";
-import DatePicker from "react-datepicker";
+import { useCallback, useEffect, useState } from "react";
+import { CalendarDaysIcon, Clock, MapIcon, SearchIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
@@ -13,6 +12,7 @@ import apiClient from "@/lib/apiClient";
 import PostCardSkeleton from "@/components/PostCardSkeleton";
 import { CityRegionFilterOptionResponse } from "../../model/LocationModel";
 import FilterRowSkeleton from "@/components/FilterRowSkeleton";
+import { useRouter } from "next/navigation";
 
 export default function MarketplacePage() {
     const [search, setSearch] = useState("");
@@ -27,6 +27,7 @@ export default function MarketplacePage() {
     const [locationFilter, setLocationFilter] = useState<LocationFilter>(null);
     const [locationOptions, setLocationOptions] = useState<CityRegionFilterOptionResponse[]>([]);
     const [apiError, setApiError] = useState("");
+    const router = useRouter();
 
     const updateSelectedDate: OnSelectHandler<Date> = useCallback(
         (selected, _triggerDate, _modifiers, _e) => {
@@ -297,7 +298,7 @@ export default function MarketplacePage() {
                         <PostCardSkeleton />
                     </>
                 ) : filteredPosts.length > 0 ? (
-                    filteredPosts.map((post) => <PostCard key={post.id} post={post} />)
+                    filteredPosts.map((post) => <PostCard onClick={() => router.push(`sport-court/${post.id}`)} key={post.id} post={post} />)
                 ) : (
                     <p className="text-center text-gray-500 mt-6">No posts found</p>
                 )}
