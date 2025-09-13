@@ -189,7 +189,7 @@ export default function MarketplacePage() {
             {filterLoading ? (
                 <FilterRowSkeleton />
             ) : (
-                <div className="flex gap-3 px-4 overflow-x-auto">
+                <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide">
                 {/* Region Filter */}
                 <Popover open={openRegionFilterDropdown} onOpenChange={setRegionFilterDropdown}>
                     <PopoverTrigger asChild>

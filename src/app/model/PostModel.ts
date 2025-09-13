@@ -1,5 +1,6 @@
 import { ProfileUser } from "./AuthModel";
 import { TimeStamp } from "./GeneralModel";
+import { OfferItemResponse } from "./OfferModel";
 
 export interface CityDTO {
     id: string;

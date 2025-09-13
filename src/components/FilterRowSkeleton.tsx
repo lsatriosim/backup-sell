@@ -2,7 +2,7 @@
 
 export default function FilterRowSkeleton() {
   return (
-    <div className="flex gap-3 px-4 overflow-x-auto">
+    <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide">
       {Array.from({ length: 3 }).map((_, idx) => (
         <div
           key={idx}

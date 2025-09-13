@@ -19,5 +19,5 @@ export interface ProfileUser {
     email: string;
     name: string;
     phone: string;
-    userId: string;
+    id: string;
 }
