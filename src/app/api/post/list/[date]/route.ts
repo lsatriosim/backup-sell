@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { forwardToBackend, withAuth } from '@/lib/apiRouteWrapper';
+import { forwardToBackend, withAuth, withoutAuth } from '@/lib/apiRouteWrapper';
 
-export const GET = withAuth(async (request: NextRequest, token: string) => {
+export const GET = withoutAuth(async (request: NextRequest) => {
     try {
         const url = new URL(request.url);
         const pathnameParts = url.pathname.split('/');
         const date = pathnameParts[pathnameParts.length - 1];
 
-        return await forwardToBackend(request, token, `/api/post/list/${date}`, 'GET');
+        return await forwardToBackend(request, null, `/api/post/list/${date}`, 'GET');
     } catch (_) {
         return NextResponse.json(
             { error: 'Failed to fetch post list due to server error.' },
