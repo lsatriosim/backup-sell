@@ -1,13 +1,18 @@
 'use client';
 
 import Link from "next/link";
-import { LogOut, Pencil, ChevronRightIcon, User } from "lucide-react";
+import { LogOut, Pencil, ChevronRightIcon, User, FileText, Tag } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import apiClient from "@/lib/apiClient";
 import { ProfileUser } from "../model/AuthModel";
 import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+
+const menus = [
+  { name: "My Post", href: "/dashboard/posts", icon: FileText },
+  { name: "My Offer", href: "/dashboard/offers", icon: Tag },
+];
 
 export default function ProfilePage() {
   const [user, setUserProfile] = useState<ProfileUser | null>(null);
@@ -100,27 +105,50 @@ export default function ProfilePage() {
 
         {/* Menu Section */}
         {user && (
-          <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-            <Link
-              href="/profile/edit"
-              className="flex items-center justify-between px-4 py-4 border-b border-gray-100"
-            >
-              <div className="flex items-center gap-3">
-                <Pencil className="h-5 w-5 text-gray-600" />
-                <span className="text-gray-800 font-medium">Edit Profile</span>
+          <div className="flex flex-col gap-4">
+            <div className="space-y-4">
+                <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+                  {menus.map((item, idx) => {
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        className={`flex items-center justify-between px-4 py-4 ${idx !== menus.length - 1 ? "border-b border-gray-100" : ""
+                          }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Icon className="h-5 w-5 text-gray-600" />
+                          <span className="text-gray-800 font-medium">{item.name}</span>
+                        </div>
+                        <ChevronRightIcon className="h-5 w-5 text-gray-600"></ChevronRightIcon>
+                      </Link>
+                    );
+                  })}
+                </div>
               </div>
-              <ChevronRightIcon className="text-gray-600" />
-            </Link>
+            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+              <Link
+                href="/profile/edit"
+                className="flex items-center justify-between px-4 py-4 border-b border-gray-100"
+              >
+                <div className="flex items-center gap-3">
+                  <Pencil className="h-5 w-5 text-gray-600" />
+                  <span className="text-gray-800 font-medium">Edit Profile</span>
+                </div>
+                <ChevronRightIcon className="text-gray-600" />
+              </Link>
 
-            <button
-              onClick={() => setShowModal(true)}
-              className="w-full flex items-center justify-between px-4 py-4 text-left"
-            >
-              <div className="flex items-center gap-3">
-                <LogOut className="h-5 w-5 text-rose-600" />
-                <span className="text-rose-600 font-medium">Sign Out</span>
-              </div>
-            </button>
+              <button
+                onClick={() => setShowModal(true)}
+                className="w-full flex items-center justify-between px-4 py-4 text-left"
+              >
+                <div className="flex items-center gap-3">
+                  <LogOut className="h-5 w-5 text-rose-600" />
+                  <span className="text-rose-600 font-medium">Sign Out</span>
+                </div>
+              </button>
+            </div>
           </div>
         )}
       </main>

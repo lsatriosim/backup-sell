@@ -62,9 +62,9 @@ export default function PostCard({ post, onClick }: PostCardProps) {
                                 <p className="text-sm text-gray-600">
                                     {post.offerCount} {post.offerCount > 1 ? "offers" : "offer"}
                                 </p>
-                                <p className="text-sm text-gray-600">
+                                {/* <p className="text-sm text-gray-600">
                                     Current Bid Rp {post.maxOfferPrice.toLocaleString()}
-                                </p>
+                                </p> */}
                             </div>
                         )}
                         {/* Min price */}

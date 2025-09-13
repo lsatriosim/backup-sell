@@ -6,9 +6,8 @@ import { Home, LayoutDashboard, ShoppingBag, User } from "lucide-react";
 
 const navItems = [
   { name: "Home", href: "/home", icon: Home },
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Marketplace", href: "/marketplace", icon: ShoppingBag },
-  { name: "Profile", href: "/profile", icon: User },
+  { name: "Me", href: "/profile", icon: User },
 ];
 
 export default function BottomNavigationBar() {

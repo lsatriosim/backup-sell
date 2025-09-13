@@ -2,7 +2,7 @@
 import PostCard from "@/components/PostCard";
 import { PostItemResponse } from "../../model/PostModel";
 import { useCallback, useEffect, useState } from "react";
-import { CalendarDaysIcon, Clock, MapIcon, SearchIcon } from "lucide-react";
+import { CalendarDaysIcon, Clock, MapIcon, SearchIcon, Plus } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
@@ -15,181 +15,164 @@ import FilterRowSkeleton from "@/components/FilterRowSkeleton";
 import { useRouter } from "next/navigation";
 
 export default function MarketplacePage() {
-    const [search, setSearch] = useState("");
-    const [date, setDate] = useState<Date | undefined>(new Date())
-    const [openDatePicker, setOpenDatePicker] = useState(false);
-    const [openTimeFilterDropdown, setTimeFilterDropdown] = useState(false);
-    const [openSportFilterDropdown, setSportFilterDropdown] = useState(false);
-    const [openRegionFilterDropdown, setRegionFilterDropdown] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [filterLoading, setFilterLoading] = useState(false);
-    type LocationFilter = { id: string; name: string; type: "city" | "region" } | null;
-    const [locationFilter, setLocationFilter] = useState<LocationFilter>(null);
-    const [locationOptions, setLocationOptions] = useState<CityRegionFilterOptionResponse[]>([]);
-    const [apiError, setApiError] = useState("");
-    const router = useRouter();
+  const [search, setSearch] = useState("");
+  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [openDatePicker, setOpenDatePicker] = useState(false);
+  const [openTimeFilterDropdown, setTimeFilterDropdown] = useState(false);
+  const [openSportFilterDropdown, setSportFilterDropdown] = useState(false);
+  const [openRegionFilterDropdown, setRegionFilterDropdown] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [filterLoading, setFilterLoading] = useState(false);
+  type LocationFilter = { id: string; name: string; type: "city" | "region" } | null;
+  const [locationFilter, setLocationFilter] = useState<LocationFilter>(null);
+  const [locationOptions, setLocationOptions] = useState<CityRegionFilterOptionResponse[]>([]);
+  const [apiError, setApiError] = useState("");
+  const router = useRouter();
 
-    const updateSelectedDate: OnSelectHandler<Date> = useCallback(
-        (selected, _triggerDate, _modifiers, _e) => {
-            if (!selected) return;
-            setDate(selected);
-            setOpenDatePicker(false);
-        },
-        []
-    );
+  // ===== FILTER OPTIONS =====
+  const sportFilterOption = ["Padel", "Badminton", "Tennis"];
+  const timeFilterOption = ["All Day", "Morning", "Afternoon", "Evening"];
 
-    const updateTimeFilter = useCallback(
-        (selected: string) => {
-            if (!selected) return;
-            setTimeFilter(selected);
-            setTimeFilterDropdown(false);
-        },
-        []
-    );
+  const [sportFilter, setSportFilter] = useState<string>(sportFilterOption[0]);
+  const [timeFilter, setTimeFilter] = useState<string>(timeFilterOption[0]);
 
-    const updateSportFilter = useCallback(
-        (selected: string) => {
-            if (!selected) return;
-            setSportFilter(selected);
-            setSportFilterDropdown(false);
-        },
-        []
-    );
+  const [posts, setPosts] = useState<PostItemResponse[]>([]);
 
-    const updateRegionFilter = useCallback(
-        (selected: LocationFilter) => {
-            setLocationFilter(selected);
-            setRegionFilterDropdown(false);
-        },
-        []
-    );
+  const updateSelectedDate: OnSelectHandler<Date> = useCallback(
+    (selected) => {
+      if (!selected) return;
+      setDate(selected);
+      setOpenDatePicker(false);
+    },
+    []
+  );
 
-    // ======= FILTER STATES =======
-    const sportFilterOption = ["Padel", "Badminton", "Tennis"];
-    const timeFilterOption = ["All Day", "Morning", "Afternoon", "Evening"];
+  const updateTimeFilter = useCallback((selected: string) => {
+    if (!selected) return;
+    setTimeFilter(selected);
+    setTimeFilterDropdown(false);
+  }, []);
 
-    const [sportFilter, setSportFilter] = useState<string>(sportFilterOption[0]);
-    const [timeFilter, setTimeFilter] = useState<string>(timeFilterOption[0]);
+  const updateSportFilter = useCallback((selected: string) => {
+    if (!selected) return;
+    setSportFilter(selected);
+    setSportFilterDropdown(false);
+  }, []);
 
-    const [posts, setPosts] = useState<PostItemResponse[]>([]);
+  const updateRegionFilter = useCallback((selected: LocationFilter) => {
+    setLocationFilter(selected);
+    setRegionFilterDropdown(false);
+  }, []);
 
-    const filteredPosts = posts.filter((post) => {
-        const start = new Date(post.startDateTime);
-        const hour = start.getHours();
+  const filteredPosts = posts.filter((post) => {
+    const start = new Date(post.startDateTime);
+    const hour = start.getHours();
 
-        let matchesLocation = true;
-        if (locationFilter) {
-            if (locationFilter.type === "city") {
-                matchesLocation = post.location.region.city.id === locationFilter.id;
-            } else if (locationFilter.type === "region") {
-                matchesLocation = post.location.region.id === locationFilter.id;
-            }
-        }
-
-        // ✅ Region & sport filter
-        const matchesRegion = post.location.name
-            .toLowerCase()
-            .includes(search.toLowerCase());
-        const matchesSport =
-            sportFilter === sportFilterOption[0] || post.sportType === sportFilter;
-
-        // ✅ Time filter
-        let matchesTime = true;
-        if (timeFilter === "Morning") {
-            matchesTime = hour >= 6 && hour < 12;
-        } else if (timeFilter === "Afternoon") {
-            matchesTime = hour >= 12 && hour < 18;
-        } else if (timeFilter === "Evening") {
-            matchesTime = hour >= 18 || hour < 6;
-        }
-
-        return matchesRegion && matchesSport && matchesTime && matchesLocation;
+    let matchesLocation = true;
+    if (locationFilter) {
+      if (locationFilter.type === "city") {
+        matchesLocation = post.location.region.city.id === locationFilter.id;
+      } else if (locationFilter.type === "region") {
+        matchesLocation = post.location.region.id === locationFilter.id;
+      }
     }
-    );
 
-    const fetchLocationByRegions = useCallback(async () => {
-        setFilterLoading(true);
-        try {
-            const response = await apiClient.get(`/api/location/get-cities-by-regions`);
-            const data: CityRegionFilterOptionResponse[] = response.data;
-            setLocationOptions(data);
-        } catch (err) {
-            setApiError(`Failed to fetch location filter option`);
-        } finally {
-            setFilterLoading(false);
-        }
-    }, []);
+    const matchesRegion = post.location.name
+      .toLowerCase()
+      .includes(search.toLowerCase());
+    const matchesSport =
+      sportFilter === sportFilterOption[0] || post.sportType === sportFilter;
 
-    const fetchPostList = useCallback(async () => {
-        setLoading(true);
-        try {
-            if (!date) {
-                return;
-            }
-            const formattedDate = format(date, "dd-MM-yyyy");
-            const response = await apiClient.get(`/api/post/list/${formattedDate}`);
-            console.log(response.data);
-            const postList: PostItemResponse[] = response.data;
-            setPosts(postList);
-        } catch (err) {
-            setApiError(`Failed to fetch post list`);
-        } finally {
-            setLoading(false);
-        }
-    }, [date]);
+    let matchesTime = true;
+    if (timeFilter === "Morning") {
+      matchesTime = hour >= 6 && hour < 12;
+    } else if (timeFilter === "Afternoon") {
+      matchesTime = hour >= 12 && hour < 18;
+    } else if (timeFilter === "Evening") {
+      matchesTime = hour >= 18 || hour < 6;
+    }
 
-    useEffect(() => {
-        fetchPostList();
-    }, [fetchPostList]);
+    return matchesRegion && matchesSport && matchesTime && matchesLocation;
+  });
 
-    useEffect(() => {
-        fetchLocationByRegions();
-    }, [fetchLocationByRegions]);
+  const fetchLocationByRegions = useCallback(async () => {
+    setFilterLoading(true);
+    try {
+      const response = await apiClient.get(`/api/location/get-cities-by-regions`);
+      const data: CityRegionFilterOptionResponse[] = response.data;
+      setLocationOptions(data);
+    } catch {
+      setApiError(`Failed to fetch location filter option`);
+    } finally {
+      setFilterLoading(false);
+    }
+  }, []);
 
-    return (
-        <div className="min-h-screen bg-neutral-100">
-            {/* Header with Search and DatePicker */}
-            <div className="bg-surface-primary p-4 flex gap-3 items-center">
-                <input
-                    type="email"
-                    name="Search"
-                    placeholder="Search Place Name"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="w-full rounded-md border px-3 py-2 text-neutral-600 disabled:opacity-50 bg-neutral-50 border-neutral-500"
-                />
+  const fetchPostList = useCallback(async () => {
+    setLoading(true);
+    try {
+      if (!date) return;
+      const formattedDate = format(date, "dd-MM-yyyy");
+      const response = await apiClient.get(`/api/post/list/${formattedDate}`);
+      setPosts(response.data);
+    } catch {
+      setApiError(`Failed to fetch post list`);
+    } finally {
+      setLoading(false);
+    }
+  }, [date]);
 
-                {/* DatePicker trigger */}
-                <Popover open={openDatePicker} onOpenChange={setOpenDatePicker}>
-                    <PopoverTrigger asChild>
-                        <CalendarDaysIcon className="h-6 w-6 text-neutral-50" />
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                        <Calendar
-                            mode="single"
-                            selected={date}
-                            required
-                            startMonth={new Date()}
-                            disabled={{ before: new Date() }}
-                            onSelect={updateSelectedDate} // custom handler
-                        />
-                    </PopoverContent>
-                </Popover>
-            </div>
+  useEffect(() => {
+    fetchPostList();
+  }, [fetchPostList]);
 
-            <div className="pt-4.5 pb-3 pl-4 pr-4">
-                {date && (
-                    <h2 className="text-2xl font-bold">
-                        {format(date, "EEEE, d MMM yyyy")}
-                    </h2>
-                )}
-            </div>
+  useEffect(() => {
+    fetchLocationByRegions();
+  }, [fetchLocationByRegions]);
 
-            {/* FILTER ROW */}
-            {filterLoading ? (
-                <FilterRowSkeleton />
-            ) : (
-                <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide">
+  return (
+    <div className="min-h-screen bg-neutral-100 relative">
+      {/* Header with Search and DatePicker */}
+      <div className="bg-surface-primary p-4 flex gap-3 items-center">
+        <input
+          type="email"
+          name="Search"
+          placeholder="Search Place Name"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full rounded-md border px-3 py-2 text-neutral-600 disabled:opacity-50 bg-neutral-50 border-neutral-500"
+        />
+
+        <Popover open={openDatePicker} onOpenChange={setOpenDatePicker}>
+          <PopoverTrigger asChild>
+            <CalendarDaysIcon className="h-6 w-6 text-neutral-50" />
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0">
+            <Calendar
+              mode="single"
+              selected={date}
+              required
+              startMonth={new Date()}
+              disabled={{ before: new Date() }}
+              onSelect={updateSelectedDate}
+            />
+          </PopoverContent>
+        </Popover>
+      </div>
+
+      <div className="pt-4.5 pb-3 pl-4 pr-4">
+        {date && (
+          <h2 className="text-2xl font-bold">
+            {format(date, "EEEE, d MMM yyyy")}
+          </h2>
+        )}
+      </div>
+
+      {/* Filter Row */}
+      {filterLoading ? (
+        <FilterRowSkeleton />
+      ) : (
+        <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide">
                 {/* Region Filter */}
                 <Popover open={openRegionFilterDropdown} onOpenChange={setRegionFilterDropdown}>
                     <PopoverTrigger asChild>
@@ -286,23 +269,36 @@ export default function MarketplacePage() {
                     </PopoverContent>
                 </Popover>
             </div>
-            )
-            }
+      )}
 
-            {/* Posts */}
-            <div className="p-4 space-y-4">
-                {loading ? (
-                    <>
-                        <PostCardSkeleton />
-                        <PostCardSkeleton />
-                        <PostCardSkeleton />
-                    </>
-                ) : filteredPosts.length > 0 ? (
-                    filteredPosts.map((post) => <PostCard onClick={() => router.push(`sport-court/${post.id}`)} key={post.id} post={post} />)
-                ) : (
-                    <p className="text-center text-gray-500 mt-6">No posts found</p>
-                )}
-            </div>
-        </div>
-    );
+      {/* Posts */}
+      <div className="p-4 space-y-4">
+        {loading ? (
+          <>
+            <PostCardSkeleton />
+            <PostCardSkeleton />
+            <PostCardSkeleton />
+          </>
+        ) : filteredPosts.length > 0 ? (
+          filteredPosts.map((post) => (
+            <PostCard
+              onClick={() => router.push(`sport-court/${post.id}`)}
+              key={post.id}
+              post={post}
+            />
+          ))
+        ) : (
+          <p className="text-center text-gray-500 mt-6">No posts found</p>
+        )}
+      </div>
+
+      {/* Floating Action Button */}
+      <button
+        onClick={() => router.push("sport-court/add")}
+        className="fixed bottom-24 right-6 bg-surface-primary text-white rounded-full shadow-lg p-4 hover:bg-surface-primary transition-colors"
+      >
+        <Plus className="h-6 w-6" />
+      </button>
+    </div>
+  );
 }
