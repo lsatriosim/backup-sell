@@ -1,7 +1,7 @@
 'use client';
 
 import Link from "next/link";
-import { LogOut, Pencil, ChevronRightIcon } from "lucide-react";
+import { LogOut, Pencil, ChevronRightIcon, User } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import apiClient from "@/lib/apiClient";
 import { ProfileUser } from "../model/AuthModel";
@@ -10,13 +10,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 
 export default function ProfilePage() {
-  const [user, setUserProfile] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    id: ""
-  });
-
+  const [user, setUserProfile] = useState<ProfileUser | null>(null);
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -29,18 +23,18 @@ export default function ProfilePage() {
       const userProfile: ProfileUser = response.data;
       setUserProfile(userProfile);
     } catch (err) {
-      setApiError(`Failed to fetch user profile`);
-      router.push("/login");
+      setApiError(`Not logged in`);
+      setUserProfile(null); // fallback state
     } finally {
       setLoading(false);
     }
-  }, [router]);
+  }, []);
 
   useEffect(() => {
-    if (user.name === "") {
+    if (!user) {
       fetchUserProfile();
     }
-  }, [fetchUserProfile, user.name]);
+  }, [fetchUserProfile, user]);
 
   const logout = useCallback(async () => {
     setLoading(true);
@@ -75,7 +69,7 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
-        ) : (
+        ) : user ? (
           <div className="bg-white rounded-2xl shadow-sm p-6 space-y-2">
             <div className="flex items-center gap-4">
               <div className="h-12 w-12 rounded-full bg-red-600 flex items-center justify-center text-white font-bold text-lg">
@@ -88,25 +82,24 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
+        ) : (
+          // Fallback card when not logged in
+          <Link
+            href="/login"
+            className="block bg-white rounded-2xl shadow-sm p-6 text-center hover:bg-gray-50 transition"
+          >
+            <div className="flex flex-col items-center gap-3">
+              <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                <User className="h-6 w-6" />
+              </div>
+              <p className="text-gray-700 font-medium">You are not logged in</p>
+              <p className="text-sm text-gray-500">Tap here to log in</p>
+            </div>
+          </Link>
         )}
 
         {/* Menu Section */}
-        {loading ? (
-          <div className="bg-white rounded-2xl shadow-sm overflow-hidden animate-pulse">
-            <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100">
-              <div className="flex items-center gap-3 w-full">
-                <div className="h-5 w-5 bg-gray-300 rounded" />
-                <div className="h-4 bg-gray-300 rounded w-1/3" />
-              </div>
-            </div>
-            <div className="flex items-center justify-between px-4 py-4">
-              <div className="flex items-center gap-3 w-full">
-                <div className="h-5 w-5 bg-gray-300 rounded" />
-                <div className="h-4 bg-gray-300 rounded w-1/4" />
-              </div>
-            </div>
-          </div>
-        ) : (
+        {user && (
           <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
             <Link
               href="/profile/edit"
@@ -116,7 +109,7 @@ export default function ProfilePage() {
                 <Pencil className="h-5 w-5 text-gray-600" />
                 <span className="text-gray-800 font-medium">Edit Profile</span>
               </div>
-              <ChevronRightIcon className="text-gray-600"></ChevronRightIcon>
+              <ChevronRightIcon className="text-gray-600" />
             </Link>
 
             <button
