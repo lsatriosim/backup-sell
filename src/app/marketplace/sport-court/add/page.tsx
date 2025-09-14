@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { CalendarDaysIcon, ChevronLeft, Loader2, MapIcon, SearchIcon } from "lucide-react";
 import apiClient from "@/lib/apiClient";
 import { format } from "date-fns";
+import { DateTimePicker } from "@/components/ui/datetimepicker";
 
 interface Location {
     id: string;
@@ -24,16 +25,17 @@ export default function AddPostPage() {
     const [locations, setLocations] = useState<Location[]>([]);
     const [locationFilter, setLocationFilter] = useState("");
     const [openLocation, setOpenLocation] = useState(false);
+    const [openStartTime, setStartTime] = useState(false);
+    const [openEndTime, setEndTime] = useState(false);
 
     const [form, setForm] = useState({
         locationId: "",
         minPrice: 0,
         itemCount: 1,
-        date: new Date(),
-        startHour: "",
-        startMinute: "",
-        endHour: "",
-        endMinute: "",
+        startDate: new Date(),   // date part
+        startTime: "09:00",      // time as string
+        endDate: new Date(),     // date part
+        endTime: "--:--",        // time as string
         sportType: "Padel",
     });
 
@@ -67,10 +69,25 @@ export default function AddPostPage() {
         setLoading(true);
 
         try {
+            if (form.locationId == "") {
+                alert("Missing court location");
+                return;
+            }
+
+            if (form.startTime.includes("-")) {
+                alert("Missing start time");
+                return;
+            }
+
+            if (form.endTime.includes("-")) {
+                alert("Missing end time");
+                return;
+            }
+
             // Construct datetime
-            const baseDate = format(form.date, "yyyy-MM-dd");
-            const startDateTime = new Date(`${baseDate}T${form.startHour}:${form.startMinute}:00`);
-            const endDateTime = new Date(`${baseDate}T${form.endHour}:${form.endMinute}:00`);
+            const baseDate = format(form.startDate, "yyyy-MM-dd");
+            const startDateTime = new Date(`${baseDate}T${form.startTime}`);
+            const endDateTime = new Date(`${baseDate}T${form.endTime}`);
 
             if (endDateTime <= startDateTime) {
                 alert("End time must be greater than start time");
@@ -113,185 +130,189 @@ export default function AddPostPage() {
             <div className="min-h-screen bg-neutral-100 p-6">
 
                 <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-                    {/* Location Selector */}
-                    <Popover open={openLocation} onOpenChange={setOpenLocation}>
-                        <PopoverTrigger asChild>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                className="w-full flex justify-between rounded-md px-3 py-2"
-                            >
-                                <span>
-                                    {form.locationId
-                                        ? locations.find((loc) => loc.id === form.locationId)?.name
-                                        : "Select Location"}
-                                </span>
-                                {locationListLoading ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                    <MapIcon className="h-4 w-4 text-gray-500" />
-                                )}
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-80 max-h-60 overflow-y-auto p-2">
-                            <input
-                                type="text"
-                                placeholder="Search location..."
-                                value={locationFilter}
-                                onChange={(e) => setLocationFilter(e.target.value)}
-                                className="w-full mb-2 rounded-md border px-2 py-1 text-sm"
-                            /> 
-                            {locations
-                                .filter((loc) =>
-                                    loc.name.toLowerCase().includes(locationFilter.toLowerCase())
-                                )
-                                .map((loc) => (
+                    {/* Sport Type */}
+                    <div>
+                        <p className="text-base text-neutral-900 mb-1 font-semibold">
+                            Sport Type
+                        </p>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="w-full flex justify-between rounded-md px-3 py-2"
+                                >
+                                    <span>{form.sportType}</span>
+                                    <SearchIcon className="h-4 w-4 text-gray-500" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-40 p-2">
+                                {sportFilterOption.map((sport) => (
                                     <div
-                                        key={loc.id}
-                                        className="cursor-pointer p-2 hover:bg-neutral-100 rounded"
-                                        onClick={() => {
-                                            setForm((prev) => ({ ...prev, locationId: loc.id }));
-                                            setOpenLocation(false);
-                                        }}
+                                        key={sport}
+                                        className="cursor-pointer p-2 rounded hover:bg-neutral-100"
+                                        onClick={() => setForm((prev) => ({ ...prev, sportType: sport }))}
                                     >
-                                        <div className="flex flex-col">
-                                            <span className="text-base">{loc.name}</span>
-                                            <span className="pl-2 text-xs line-clamp-1">{loc.addressDescription}</span>
-                                        </div>
+                                        {sport}
                                     </div>
                                 ))}
-                        </PopoverContent>
-                    </Popover>
-
-                    {/* Min Price */}
-                    <div>
-                        <input
-                            type="number"
-                            name="minPrice"
-                            placeholder="Minimum Price"
-                            value={form.minPrice}
-                            onChange={handleChange}
-                            className="w-full rounded-md border px-3 py-2 text-neutral-600"
-                            required
-                        />
-                        <p className="text-sm text-gray-500 mt-1">
-                            Minimum price per 1 item count
-                        </p>
+                            </PopoverContent>
+                        </Popover>
                     </div>
 
-                    {/* Item Count */}
-                    <input
-                        type="number"
-                        name="itemCount"
-                        min={1}
-                        max={10}
-                        value={form.itemCount}
-                        onChange={handleChange}
-                        className="w-full rounded-md border px-3 py-2 text-neutral-600"
-                        required
-                    />
+                    {/* Location Selector */}
+                    <div>
+                        <p className="text-base text-neutral-900 mb-1 font-semibold">
+                            Court Location
+                        </p>
+                        <Popover open={openLocation} onOpenChange={setOpenLocation}>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="w-full flex justify-between rounded-md px-3 py-2"
+                                >
+                                    <span>
+                                        {form.locationId
+                                            ? locations.find((loc) => loc.id === form.locationId)?.name
+                                            : "Select Location"}
+                                    </span>
+                                    {locationListLoading ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <MapIcon className="h-4 w-4 text-gray-500" />
+                                    )}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-80 max-h-60 overflow-y-auto p-2">
+                                <input
+                                    type="text"
+                                    placeholder="Search location..."
+                                    value={locationFilter}
+                                    onChange={(e) => {
+                                        setLocationFilter(e.target.value)
+                                        const locationId = locations.find((loc) => loc.name === locationFilter)?.id
+                                        setForm((prev) => ({ ...prev, locationId: locationId ?? "" }))
+                                    }}
+                                    className="w-full mb-2 rounded-md border px-2 py-1 text-sm"
+                                />
+                                {locations
+                                    .filter((loc) =>
+                                        loc.name.toLowerCase().includes(locationFilter.toLowerCase())
+                                    )
+                                    .map((loc) => (
+                                        <div
+                                            key={loc.id}
+                                            className="cursor-pointer p-2 hover:bg-neutral-100 rounded"
+                                            onClick={() => {
+                                                setForm((prev) => ({ ...prev, locationId: loc.id }));
+                                                setOpenLocation(false);
+                                            }}
+                                        >
+                                            <div className="flex flex-col">
+                                                <span className="text-base">{loc.name}</span>
+                                                <span className="pl-2 text-xs line-clamp-1">{loc.addressDescription}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                            </PopoverContent>
+                        </Popover>
+                    </div>
+
+                    <div className="flex flex-row justify-between gap-4">
+                        {/* Item Count */}
+                        <div>
+                            <p className="text-base text-neutral-900 mb-1 font-semibold">
+                                Court Count
+                            </p>
+                            <input
+                                type="number"
+                                name="itemCount"
+                                min={1}
+                                max={10}
+                                value={form.itemCount}
+                                onChange={handleChange}
+                                className="w-full rounded-md border px-3 py-2 text-neutral-600"
+                                required
+                            />
+                        </div>
+
+                        {/* Min Price */}
+                        <div>
+                            <p className="text-base text-neutral-900 mb-1 font-semibold">
+                                Minimum Price (per court)
+                            </p>
+                            <input
+                                type="text"
+                                name="minPrice"
+                                placeholder="Minimum Price"
+                                value={
+                                    form.minPrice
+                                        ? new Intl.NumberFormat("id-ID", {
+                                            style: "currency",
+                                            currency: "IDR",
+                                            minimumFractionDigits: 0,
+                                        }).format(form.minPrice)
+                                        : ""
+                                }
+                                onChange={(e) => {
+                                    // remove all non-digit chars
+                                    const rawValue = e.target.value.replace(/\D/g, "");
+                                    setForm((prev) => ({
+                                        ...prev,
+                                        minPrice: rawValue ? parseInt(rawValue, 10) : 0,
+                                    }));
+                                }}
+                                className="w-full rounded-md border px-3 py-2 text-neutral-600"
+                                required
+                            />
+                        </div>
+                    </div>
 
                     {/* Date Picker */}
-                    <Popover>
-                        <PopoverTrigger asChild>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                className="w-full flex justify-between rounded-md px-3 py-2"
-                            >
-                                <span>{format(form.date, "EEEE, d MMM yyyy")}</span>
-                                <CalendarDaysIcon className="h-4 w-4 text-gray-500" />
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                            <Calendar
-                                mode="single"
-                                selected={form.date}
-                                required
-                                startMonth={new Date()}
-                                disabled={{ before: new Date() }}
-                                onSelect={(selected) =>
-                                    setForm((prev) => ({ ...prev, date: selected ?? new Date() }))
+                    <div>
+                        <p className="text-base text-neutral-900 mb-1 font-semibold">
+                            Start Time
+                        </p>
+                        <DateTimePicker
+                            label="Start"
+                            open={openStartTime}
+                            onOpenChange={setStartTime}
+                            date={form.startDate}
+                            onDateChange={(date) => {
+                                if (form.endDate < form.startDate) {
+                                    setForm((prev) => ({ ...prev, startDate: date ?? new Date(), endDate: date ?? new Date() }))
+                                } else {
+                                    setForm((prev) => ({ ...prev, startDate: date ?? new Date() }))
                                 }
-                            />
-                        </PopoverContent>
-                    </Popover>
-
-                    {/* Start & End Time */}
-                    <div className="flex gap-2">
-                        <input
-                            type="number"
-                            name="startHour"
-                            placeholder="Start Hour (0-23)"
-                            min={0}
-                            max={23}
-                            value={form.startHour}
-                            onChange={handleChange}
-                            className="w-full rounded-md border px-3 py-2 text-neutral-600"
-                            required
-                        />
-                        <input
-                            type="number"
-                            name="startMinute"
-                            placeholder="Start Min (0-59)"
-                            min={0}
-                            max={59}
-                            value={form.startMinute}
-                            onChange={handleChange}
-                            className="w-full rounded-md border px-3 py-2 text-neutral-600"
-                            required
+                            }
+                            }
+                            time={form.startTime}
+                            onTimeChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                setForm((prev) => ({ ...prev, startTime: e.target.value }))
+                            }
                         />
                     </div>
 
-                    <div className="flex gap-2">
-                        <input
-                            type="number"
-                            name="endHour"
-                            placeholder="End Hour (0-23)"
-                            min={0}
-                            max={23}
-                            value={form.endHour}
-                            onChange={handleChange}
-                            className="w-full rounded-md border px-3 py-2 text-neutral-600"
-                            required
-                        />
-                        <input
-                            type="number"
-                            name="endMinute"
-                            placeholder="End Min (0-59)"
-                            min={0}
-                            max={59}
-                            value={form.endMinute}
-                            onChange={handleChange}
-                            className="w-full rounded-md border px-3 py-2 text-neutral-600"
-                            required
+                    <div>
+                        <p className="text-base text-neutral-900 mb-1 font-semibold">
+                            End Time
+                        </p>
+
+                        <DateTimePicker
+                            label="End"
+                            open={openEndTime}
+                            onOpenChange={setEndTime}
+                            date={form.endDate}
+                            onDateChange={(date) =>
+                                setForm((prev) => ({ ...prev, endDate: date ?? new Date() }))
+                            }
+                            time={form.endTime}
+                            onTimeChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                setForm((prev) => ({ ...prev, endTime: e.target.value }))
+                            }
                         />
                     </div>
-
-                    {/* Sport Type */}
-                    <Popover>
-                        <PopoverTrigger asChild>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                className="w-full flex justify-between rounded-md px-3 py-2"
-                            >
-                                <span>{form.sportType}</span>
-                                <SearchIcon className="h-4 w-4 text-gray-500" />
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-40 p-2">
-                            {sportFilterOption.map((sport) => (
-                                <div
-                                    key={sport}
-                                    className="cursor-pointer p-2 rounded hover:bg-neutral-100"
-                                    onClick={() => setForm((prev) => ({ ...prev, sportType: sport }))}
-                                >
-                                    {sport}
-                                </div>
-                            ))}
-                        </PopoverContent>
-                    </Popover>
 
                     {/* Submit */}
                     <button
