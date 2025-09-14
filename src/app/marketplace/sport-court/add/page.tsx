@@ -104,11 +104,9 @@ export default function AddPostPage() {
                 sportType: form.sportType,
             };
 
-            await apiClient.post("/api/post/add", payload);
-
-            router.push("/marketplace");
+            await apiClient.post("/api/post/create", payload);
+            router.back();
         } catch (err) {
-            console.error(err);
             alert("Failed to create post");
         } finally {
             setLoading(false);

@@ -41,3 +41,12 @@ export interface PostItemResponse extends PostDto, TimeStamp  {
     maxOfferPrice: number;
     isBoosted: boolean;
 }
+
+export interface CreatePostDto {
+    locationId: string; //Foreign key to Location
+    minPrice: number;
+    itemCount: number;
+    startDateTime: Date;
+    endDateTime: Date;
+    sportType: string;
+}
