@@ -14,7 +14,7 @@ export default function BottomNavigationBar() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-md rounded-t-2xl py-2">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-md rounded-t-2xl py-2 z-20">
       <ul className="flex justify-around items-center h-16">
         {navItems.map((item) => {
           const Icon = item.icon;

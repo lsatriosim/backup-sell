@@ -10,26 +10,24 @@ import apiClient from "@/lib/apiClient";
 import { ChevronLeft, Plus, Sheet } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 import { CustomDialog } from "@/components/CustomDialog";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { LoginRequiredDialog } from "@/components/LoginRequiredDialog";
+import { useUser } from "@/app/context/UserContext";
 
 export default function SportDetailPostPage() {
   const router = useRouter();
   const params = useParams();
   const postId = params["post-id"] as string;
+  const { userId } = useUser();
   const [post, setPost] = useState<PostItemResponse | undefined>(undefined);
   const [offers, setOffers] = useState<OfferItemResponse[]>([]);
   const [postLoading, setPostLoading] = useState(false);
   const [offerLoading, setOfferLoading] = useState(false);
   const [apiError, setApiError] = useState("");
+  const [openLoginDialog, setOpenLoginDialog] = useState(false);
 
   // modal state
   const [openModal, setOpenModal] = useState(false);
@@ -86,8 +84,11 @@ export default function SportDetailPostPage() {
       });
       setOpenModal(false);
       fetchOfferDetail(); // refresh offers
-    } catch (err) {
+    } catch (err: any) {
       setApiError(`Failed to create offer`);
+      if(err.response.status == 401) {
+        setOpenLoginDialog(true);
+      }
     } finally {
       setLoading(false);
     }
@@ -183,7 +184,11 @@ export default function SportDetailPostPage() {
             form="offer-form"
             className="w-full bg-surface-primary text-white"
           >
-            {loading ? "Submitting..." : "Submit Offer"}
+            {loading ? (
+              <FontAwesomeIcon icon={faSpinner} spin className="text-lg" />
+            ) : (
+              "Submit Offer"
+            )}
           </Button>
         }
       >
@@ -273,6 +278,8 @@ export default function SportDetailPostPage() {
         </form>
 
       </CustomDialog>
+
+      <LoginRequiredDialog open={openLoginDialog} onOpenChange={setOpenLoginDialog} />
     </div>
   );
 }

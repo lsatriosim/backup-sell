@@ -7,10 +7,14 @@ import { faEye, faEyeSlash, faSpinner } from "@fortawesome/free-solid-svg-icons"
 import { LoginRequest } from "../model/AuthModel";
 import apiClient from "@/lib/apiClient";
 import axios from "axios";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useUser } from "../context/UserContext";
 
 export default function LoginPage() {
     const router = useRouter();
+    const { setUserId } = useUser();
+    const searchParams = useSearchParams();
+    const shouldBack = searchParams.get("shouldBack");
     const [form, setForm] = useState({
         email: "",
         password: ""
@@ -35,11 +39,18 @@ export default function LoginPage() {
                 password: form.password
             }
 
-            await apiClient.post(
+            const response = await apiClient.post(
                 '/api/auth/login',
                 requestBody
             );
-            router.push('/home');
+
+            setUserId(response.data.id);
+
+            if (shouldBack == "true") {
+                router.back();
+            } else {
+                router.push('/home');
+            }
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 setErrorMessage(err.response?.data?.data?.error);
@@ -52,14 +63,24 @@ export default function LoginPage() {
     }
 
     useEffect(() => {
-    if (errorMessage) {
-      alert(errorMessage);
-      setErrorMessage("");
-    }
-  }, [errorMessage]);
+        if (errorMessage) {
+            alert(errorMessage);
+            setErrorMessage("");
+        }
+    }, [errorMessage]);
+
+    useEffect(() => {
+        // Disable scroll
+        document.body.style.overflow = "hidden";
+
+        return () => {
+            // Restore scroll when leaving the page
+            document.body.style.overflow = "";
+        };
+    }, []);
 
     return (
-        <div className="flex flex-col min-h-screen bg-white">
+        <div className="flex flex-col min-h-screen bg-white overflow-hidden">
             {/* Top background with text */}
             <div className="relative h-[40vh] w-full z-0">
                 <Image
