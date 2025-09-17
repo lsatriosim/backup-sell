@@ -8,6 +8,7 @@ import { ProfileUser } from "../model/AuthModel";
 import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { useUser } from "@/app/context/UserContext"
 
 const menus = [
   { name: "My Post", href: "/dashboard/posts", icon: FileText },
@@ -16,6 +17,7 @@ const menus = [
 
 export default function ProfilePage() {
   const [user, setUserProfile] = useState<ProfileUser | null>(null);
+  const userContext = useUser();
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -45,6 +47,7 @@ export default function ProfilePage() {
     setLoading(true);
     try {
       await apiClient.post("/api/auth/logout");
+      userContext.deleteUserId();
       router.push("/login");
     } catch (err) {
       setApiError(`Failed to log out`);

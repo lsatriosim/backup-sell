@@ -69,16 +69,6 @@ export default function LoginPage() {
         }
     }, [errorMessage]);
 
-    useEffect(() => {
-        // Disable scroll
-        document.body.style.overflow = "hidden";
-
-        return () => {
-            // Restore scroll when leaving the page
-            document.body.style.overflow = "";
-        };
-    }, []);
-
     return (
         <div className="flex flex-col min-h-screen bg-white overflow-hidden">
             {/* Top background with text */}

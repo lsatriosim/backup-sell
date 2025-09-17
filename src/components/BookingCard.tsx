@@ -3,7 +3,6 @@ import { PostItemResponse } from "@/app/model/PostModel";
 
 interface BookingCardProps {
   post: PostItemResponse;
-  onClick: (id: string) => void;
 }
 
 export default function BookingCard({ post }: BookingCardProps) {

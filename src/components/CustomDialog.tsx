@@ -27,7 +27,7 @@ export function CustomDialog({ open, onOpenChange, title, children, footer }: Cu
 
         <div className="mt-2 flex flex-col gap-4">{children}</div>
 
-        {footer && <DialogFooter>{footer}</DialogFooter>}
+        {footer && <DialogFooter className="w-full flex justify-end">{footer}</DialogFooter>}
       </DialogContent>
     </Dialog>
   )

@@ -125,7 +125,6 @@ export async function forwardToBackend(
         backendResponse.headers.forEach((value, key) => {
         // Check for 'Set-Cookie' header and append it.
         if (key.toLowerCase() === 'set-cookie') {
-            console.log("appending the cookie");
             responseHeaders.append(key, value);
         } else {
             // For all other headers, simply set them.

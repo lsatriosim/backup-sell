@@ -16,6 +16,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { LoginRequiredDialog } from "@/components/LoginRequiredDialog";
 import { useUser } from "@/app/context/UserContext";
+import BuyerInfoDialog from "@/components/BuyerInfoDialog";
 
 export default function SportDetailPostPage() {
   const router = useRouter();
@@ -28,6 +29,7 @@ export default function SportDetailPostPage() {
   const [offerLoading, setOfferLoading] = useState(false);
   const [apiError, setApiError] = useState("");
   const [openLoginDialog, setOpenLoginDialog] = useState(false);
+  const [openBuyerInfoDialog, setOpenBuyerInfoDialog] = useState(false);
 
   // modal state
   const [openModal, setOpenModal] = useState(false);
@@ -69,30 +71,30 @@ export default function SportDetailPostPage() {
     }
   }, [postId]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      if (form.price < (post?.minPrice ?? 0)) {
-        alert("Price can't below than minimum price");
-        return;
-      }
-      await apiClient.post(`/api/offer/create`, {
-        postId,
-        price: form.price,
-        itemCount: form.itemCount,
-      });
-      setOpenModal(false);
-      fetchOfferDetail(); // refresh offers
-    } catch (err: any) {
-      setApiError(`Failed to create offer`);
-      if(err.response.status == 401) {
-        setOpenLoginDialog(true);
-      }
-    } finally {
-      setLoading(false);
+  const handleSubmit = async () => {
+  setLoading(true);
+  try {
+    if (form.price < (post?.minPrice ?? 0)) {
+      alert("Price can't be below the minimum price");
+      return;
     }
-  };
+    await apiClient.post(`/api/offer/create`, {
+      postId,
+      price: form.price,
+      itemCount: form.itemCount,
+    });
+    setOpenModal(false);
+    setOpenBuyerInfoDialog(false); // close disclaimer too
+    fetchOfferDetail();
+  } catch (err: any) {
+    setApiError(`Failed to create offer`);
+    if (err.response?.status === 401) {
+      setOpenLoginDialog(true);
+    }
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchPostDetail();
@@ -122,7 +124,6 @@ export default function SportDetailPostPage() {
           post && (
             <BookingCard
               post={post}
-              onClick={(id) => console.log("Clicked post:", id)}
             />
           )
         )}
@@ -141,6 +142,7 @@ export default function SportDetailPostPage() {
               offers={offers}
               userFullName={post.seller?.name ?? "Unknown User"}
               postId={post.id}
+              sellerId={post.seller.id}
               locationName={post.location?.name ?? "Unknown Location"}
               date={new Date(post.startDateTime).toLocaleDateString("id-ID", {
                 day: "numeric",
@@ -164,6 +166,7 @@ export default function SportDetailPostPage() {
       </main>
 
       {/* Floating Create Offer Button */}
+      {post?.seller.id != userId && 
       <button
         onClick={() => {
           setOpenModal(true)
@@ -171,17 +174,18 @@ export default function SportDetailPostPage() {
         className="fixed bottom-24 right-6 bg-surface-primary text-white p-4 rounded-full shadow-lg hover:bg-blue-600 transition z-10"
       >
         <Plus className="h-6 w-6" />
-      </button>
+      </button>}
 
       <CustomDialog
         open={openModal}
         onOpenChange={setOpenModal}
         title="Create Offer"
         footer={
+          
           <Button
-            type="submit"
+            onClick={() => setOpenBuyerInfoDialog(true)}
             disabled={loading}
-            form="offer-form"
+            type="button"
             className="w-full bg-surface-primary text-white"
           >
             {loading ? (
@@ -192,7 +196,7 @@ export default function SportDetailPostPage() {
           </Button>
         }
       >
-        <form id="offer-form" onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form id="offer-form" onSubmit={() => {}} className="flex flex-col gap-4">
           {/* Court Count */}
           <div>
             <label className="block text-sm font-medium mb-1">Court Count </label>
@@ -280,6 +284,10 @@ export default function SportDetailPostPage() {
       </CustomDialog>
 
       <LoginRequiredDialog open={openLoginDialog} onOpenChange={setOpenLoginDialog} />
+      <BuyerInfoDialog open={openBuyerInfoDialog} setOpen={setOpenBuyerInfoDialog} ctaButtonDidTap={() => {
+        setOpenBuyerInfoDialog(false);
+        handleSubmit()
+        }}/>
     </div>
   );
 }

@@ -13,6 +13,8 @@ import PostCardSkeleton from "@/components/PostCardSkeleton";
 import { CityRegionFilterOptionResponse } from "../../model/LocationModel";
 import FilterRowSkeleton from "@/components/FilterRowSkeleton";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/app/context/UserContext";
+import { LoginRequiredDialog } from "@/components/LoginRequiredDialog";
 
 export default function MarketplacePage() {
   const [search, setSearch] = useState("");
@@ -28,6 +30,8 @@ export default function MarketplacePage() {
   const [locationOptions, setLocationOptions] = useState<CityRegionFilterOptionResponse[]>([]);
   const [apiError, setApiError] = useState("");
   const router = useRouter();
+  const userContext = useUser();
+  const [showLoginRequiredPopUp, setShowLoginRequiredPopUp] = useState(false);
 
   // ===== FILTER OPTIONS =====
   const sportFilterOption = ["Padel", "Badminton", "Tennis"];
@@ -121,6 +125,14 @@ export default function MarketplacePage() {
       setLoading(false);
     }
   }, [date]);
+
+  const addButtonDidTap = () => {    
+    if (userContext.userId != null) {
+        router.push("sport-court/add");
+    } else {
+        setShowLoginRequiredPopUp(true);
+    }
+  }
 
   useEffect(() => {
     fetchPostList();
@@ -294,11 +306,15 @@ export default function MarketplacePage() {
 
       {/* Floating Action Button */}
       <button
-        onClick={() => router.push("sport-court/add")}
-        className="fixed bottom-24 right-6 bg-surface-primary text-white rounded-full shadow-lg p-4 hover:bg-surface-primary transition-colors"
+        onClick={() => {
+          addButtonDidTap()
+        }}
+        className="fixed bottom-24 right-6 bg-surface-primary text-white p-4 rounded-full shadow-lg hover:bg-blue-600 transition z-10"
       >
         <Plus className="h-6 w-6" />
       </button>
+
+      <LoginRequiredDialog open={showLoginRequiredPopUp} onOpenChange={setShowLoginRequiredPopUp} />
     </div>
   );
 }
