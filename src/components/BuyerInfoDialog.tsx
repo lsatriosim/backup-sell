@@ -24,6 +24,9 @@ export default function BuyerInfoDialog({ open, setOpen, ctaButtonDidTap }: Buye
         if you change your mind.
       </li>
       <li>
+        By creating offer, you give seller access to contact your phone number
+      </li>
+      <li>
         Verify the{" "}
         <span className="font-medium">seller’s invoice</span> before
         sending any payment.

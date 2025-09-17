@@ -105,7 +105,7 @@ export default function OfferList({
                                     }}
                                     className="p-1 text-gray-600 hover:text-blue-500"
                                 >
-                                    <MessageCircle className="h-5 w-5" />
+                                    <MessageCircle className="h-5 w-5" color="#2DD46A" />
                                 </button>}
                             </div>
                         </div>
