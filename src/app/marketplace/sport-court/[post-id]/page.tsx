@@ -7,7 +7,7 @@ import OfferList from "@/components/OfferList";
 import BookingCardSkeleton from "@/components/BookingCardSkeleton";
 import OfferCardSkeleton from "@/components/OfferCardSkeleton";
 import apiClient from "@/lib/apiClient";
-import { ChevronLeft, Plus, HandCoins } from "lucide-react";
+import { ChevronLeft, Plus, HandCoins, PencilIcon } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { LoginRequiredDialog } from "@/components/LoginRequiredDialog";
 import { useUser } from "@/app/context/UserContext";
 import BuyerInfoDialog from "@/components/BuyerInfoDialog";
+import { enUS } from "date-fns/locale";
 
 export default function SportDetailPostPage() {
   const router = useRouter();
@@ -105,7 +106,7 @@ export default function SportDetailPostPage() {
         setOpenLoginDialog(true);
         return;
       }
-      if(hasUserOffer) {
+      if (hasUserOffer) {
         alert("Failed to update offer. Please try again.")
       } else {
         alert("Failed to create offer. Please try again.")
@@ -133,13 +134,22 @@ export default function SportDetailPostPage() {
   return (
     <div className="flex flex-col min-h-screen bg-neutral-50">
       {/* Header */}
-      <header className="bg-surface-primary text-white px-4 py-3 flex items-center gap-3">
-        <div className="flex flex-row gap-4" onClick={() => router.back()}>
-          <ChevronLeft className="h-6 w-6" />
-          <h1 className="text-lg font-semibold">
-            {post?.sportType ?? "Sport Court"}
-          </h1>
-        </div>
+      <header className="bg-surface-primary text-white px-4 py-3 flex items-center">
+        <ChevronLeft
+          className="h-8 w-8 cursor-pointer"
+          onClick={() => router.back()}
+        />
+
+        <h1 className="text-lg font-semibold mx-4 flex-1 text-center truncate">
+          {post?.sportType ?? "Sport Court"}
+        </h1>
+
+        {userId === post?.seller.id && (
+          <PencilIcon
+            className="h-8 w-8 cursor-pointer"
+            onClick={() => router.push(`/marketplace/sport-court/${postId}/edit`)}
+          />
+        )}
       </header>
 
       <div className="bg-surface-primary w-full h-60 rounded-b-xl"></div>

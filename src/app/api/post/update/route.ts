@@ -12,7 +12,7 @@ export const POST = withAuth(async (request: NextRequest, token: string) => {
     }
 
     try {
-        return await forwardToBackend(request, token, '/api/post/create', 'POST', requestBody);
+        return await forwardToBackend(request, token, '/api/post/update', 'POST', requestBody);
     } catch (_) {
         return NextResponse.json({ error: 'Failed to update post due to server error.' }, { status: 500 });
     }

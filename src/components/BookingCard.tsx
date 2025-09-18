@@ -9,17 +9,17 @@ export default function BookingCard({ post }: BookingCardProps) {
   const { id, location, startDateTime, endDateTime, minPrice, itemCount, seller, status } = post;
 
   // Format date & time
-  const date = new Date(startDateTime).toLocaleDateString("id-ID", {
+  const date = new Date(startDateTime).toLocaleDateString("en-ID", {
     weekday: "long",
     day: "numeric",
     month: "short",
     year: "numeric",
   });
 
-  const timeRange = `${new Date(startDateTime).toLocaleTimeString("id-ID", {
+  const timeRange = `${new Date(startDateTime).toLocaleTimeString("en-ID", {
     hour: "2-digit",
     minute: "2-digit",
-  })} - ${new Date(endDateTime).toLocaleTimeString("id-ID", {
+  })} - ${new Date(endDateTime).toLocaleTimeString("en-ID", {
     hour: "2-digit",
     minute: "2-digit",
   })}`;
@@ -75,9 +75,9 @@ export default function BookingCard({ post }: BookingCardProps) {
         <div className="flex items-center gap-2 font-semibold">
           <Clock className="h-5 w-5" /> Details & Price
         </div>
-        <p className="text-sm mt-1">{itemCount} Courts</p>
+        <p className="text-sm mt-1">Total Court: {itemCount} Courts</p>
         <p className="text-sm">
-          Rp {minPrice.toLocaleString("id-ID")}/pcs
+          Minimal Price: Rp {minPrice.toLocaleString("id-ID")}/pcs
         </p>
       </div>
 

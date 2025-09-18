@@ -1,14 +1,16 @@
 'use client';
 
 import { useEffect, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { Calendar } from "@/components/ui/calendar";
+import { useParams, useRouter } from "next/navigation";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { CalendarDaysIcon, ChevronLeft, Loader2, MapIcon, SearchIcon } from "lucide-react";
+import { ChevronLeft, Loader2, MapIcon, SearchIcon } from "lucide-react";
 import apiClient from "@/lib/apiClient";
 import { format } from "date-fns";
 import { DateTimePicker } from "@/components/ui/datetimepicker";
+import { useUser } from "@/app/context/UserContext";
+import { PostItemResponse } from "@/app/model/PostModel";
+import { enUS } from "date-fns/locale";
 
 interface Location {
     id: string;
@@ -16,10 +18,14 @@ interface Location {
     addressDescription: string;
 }
 
-export default function AddPostPage() {
+export default function EditPostPage() {
     const router = useRouter();
+    const params = useParams();
+    const postId = params["post-id"] as string;
 
     // =============== STATES ===============
+    const { userId } = useUser();
+    const [post, setPost] = useState<PostItemResponse | undefined>(undefined);
     const [loading, setLoading] = useState(false);
     const [locationListLoading, setLocationListLoading] = useState(false);
     const [locations, setLocations] = useState<Location[]>([]);
@@ -54,9 +60,57 @@ export default function AddPostPage() {
         }
     }, []);
 
+    const fetchPostDetail = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await apiClient.get(`/api/post/${postId}`);
+            const data: PostItemResponse = response.data;
+            const start = new Date(data.startDateTime);
+            const end = new Date(data.endDateTime);
+
+            const formatTime = (date: Date) => {
+            const hours = date.getHours().toString().padStart(2, "0");
+            const minutes = date.getMinutes().toString().padStart(2, "0");
+            return `${hours}:${minutes}`; // Always HH:mm
+            };
+
+            setPost(data);
+            console.log(start)
+            console.log(end)
+            console.log(formatTime(start))
+            console.log(formatTime(end))
+            setForm({
+                locationId: data.location.id,
+                minPrice: data.minPrice,
+                itemCount: data.itemCount,
+                startDate: start,
+                startTime: formatTime(start),
+                endDate: end,
+                endTime: formatTime(end),
+                sportType: data.sportType,
+            });
+        } catch (err) {
+            alert(`Failed to fetch post detail`);
+        } finally {
+            setLoading(false);
+        }
+    }, [postId]);
+
     useEffect(() => {
+        fetchPostDetail()
         fetchLocations();
-    }, [fetchLocations]);
+    }, [fetchLocations, fetchPostDetail]);
+
+    // After both post & locations are fetched, sync locationFilter
+    useEffect(() => {
+    if (form.locationId && locations.length > 0) {
+        const matchedLocation = locations.find((loc) => loc.id === form.locationId);
+        if (matchedLocation) {
+        setLocationFilter(matchedLocation.name);
+        }
+    }
+    }, [form.locationId, locations]);
+
 
     // =============== HANDLERS ===============
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -106,18 +160,20 @@ export default function AddPostPage() {
             }
 
             const payload = {
+                id: postId,
+                sellerId: post?.seller.id,
                 locationId: form.locationId,
                 minPrice: Number(form.minPrice),
                 itemCount: Number(form.itemCount),
-                startDateTime,
-                endDateTime,
+                startDateTime: startDateTime,
+                endDateTime: endDateTime,
                 sportType: form.sportType,
             };
 
-            await apiClient.post("/api/post/create", payload);
+            await apiClient.post("/api/post/update", payload);
             router.back();
         } catch (err) {
-            alert("Failed to create post");
+            alert("Failed to update post");
         } finally {
             setLoading(false);
         }
@@ -130,7 +186,7 @@ export default function AddPostPage() {
                 <div className="flex flex-row gap-4" onClick={() => router.back()}>
                     <ChevronLeft className="h-6 w-6" />
                     <h1 className="text-lg font-semibold">
-                        Create Sport Court Post
+                        Edit Sport Court Post
                     </h1>
                 </div>
             </header>
@@ -328,7 +384,7 @@ export default function AddPostPage() {
                         disabled={loading}
                         className="w-full bg-surface-primary text-white py-3 rounded-md font-medium hover:bg-blue-700 disabled:opacity-70 flex justify-center items-center gap-2"
                     >
-                        {loading ? "Saving..." : "Create Post"}
+                        {loading ? "Saving..." : "Update Post"}
                     </button>
                 </form>
             </div>
