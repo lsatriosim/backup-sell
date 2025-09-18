@@ -2,7 +2,7 @@ import { TimeStamp } from "./GeneralModel";
 
 export interface OfferDTO {
     postId: string; //Foreign key to Post
-    price: string;
+    price: number;
     itemCount: number;
 }
 

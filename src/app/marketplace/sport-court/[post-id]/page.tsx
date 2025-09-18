@@ -7,7 +7,7 @@ import OfferList from "@/components/OfferList";
 import BookingCardSkeleton from "@/components/BookingCardSkeleton";
 import OfferCardSkeleton from "@/components/OfferCardSkeleton";
 import apiClient from "@/lib/apiClient";
-import { ChevronLeft, Plus, Sheet } from "lucide-react";
+import { ChevronLeft, Plus, HandCoins } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,9 @@ export default function SportDetailPostPage() {
   const [apiError, setApiError] = useState("");
   const [openLoginDialog, setOpenLoginDialog] = useState(false);
   const [openBuyerInfoDialog, setOpenBuyerInfoDialog] = useState(false);
+
+  const hasUserOffer = offers.some((offer) => offer.buyer.userId === userId);
+  const userOffer = offers.find((offer) => offer.buyer.userId === userId);
 
   // modal state
   const [openModal, setOpenModal] = useState(false);
@@ -72,29 +75,55 @@ export default function SportDetailPostPage() {
   }, [postId]);
 
   const handleSubmit = async () => {
-  setLoading(true);
-  try {
-    if (form.price < (post?.minPrice ?? 0)) {
-      alert("Price can't be below the minimum price");
-      return;
+    setLoading(true);
+    try {
+      if (form.price < (post?.minPrice ?? 0)) {
+        alert("Price can't be below the minimum price");
+        return;
+      }
+      if (hasUserOffer) {
+        if (userOffer !== undefined) {
+          await apiClient.post(`/api/offer/update`, {
+            id: userOffer.id,
+            price: form.price,
+            itemCount: form.itemCount,
+            userId: userOffer.buyer.userId
+          })
+        };
+      } else {
+        await apiClient.post(`/api/offer/create`, {
+          postId,
+          price: form.price,
+          itemCount: form.itemCount,
+        });
+      }
+      setOpenModal(false);
+      setOpenBuyerInfoDialog(false); // close disclaimer too
+      fetchOfferDetail();
+    } catch (err: any) {
+      if (err.response?.status === 401) {
+        setOpenLoginDialog(true);
+        return;
+      }
+      if(hasUserOffer) {
+        alert("Failed to update offer. Please try again.")
+      } else {
+        alert("Failed to create offer. Please try again.")
+      }
+    } finally {
+      setLoading(false);
     }
-    await apiClient.post(`/api/offer/create`, {
-      postId,
-      price: form.price,
-      itemCount: form.itemCount,
-    });
-    setOpenModal(false);
-    setOpenBuyerInfoDialog(false); // close disclaimer too
-    fetchOfferDetail();
-  } catch (err: any) {
-    setApiError(`Failed to create offer`);
-    if (err.response?.status === 401) {
-      setOpenLoginDialog(true);
+  };
+
+  const fillFormWithOfferData = () => {
+    if (userOffer) {
+      setForm({
+        price: userOffer.price ?? 0,
+        itemCount: userOffer.itemCount ?? 1,
+      });
     }
-  } finally {
-    setLoading(false);
-  }
-};
+  };
+
 
   useEffect(() => {
     fetchPostDetail();
@@ -166,37 +195,48 @@ export default function SportDetailPostPage() {
       </main>
 
       {/* Floating Create Offer Button */}
-      {post?.seller.id != userId && 
-      <button
-        onClick={() => {
-          setOpenModal(true)
-        }}
-        className="fixed bottom-24 right-6 bg-surface-primary text-white p-4 rounded-full shadow-lg hover:bg-blue-600 transition z-10"
-      >
-        <Plus className="h-6 w-6" />
-      </button>}
+      {post?.seller.id != userId &&
+        <button
+          onClick={() => {
+            if (hasUserOffer) {
+              console.log("user has offer");
+              fillFormWithOfferData()
+            }
+            setOpenModal(true)
+          }}
+          className="fixed bottom-24 right-6 bg-surface-primary text-white p-4 rounded-full shadow-lg hover:bg-blue-600 transition z-10"
+        >
+          {hasUserOffer ? (
+            <HandCoins className="h-6 w-6 text-neutral-50" /> // Different icon if user already made an offer
+          ) : (
+            <Plus className="h-6 w-6 text-neutral-50" /> // Default icon
+          )}
+        </button>}
 
       <CustomDialog
         open={openModal}
         onOpenChange={setOpenModal}
-        title="Create Offer"
+        title={hasUserOffer ? "Change Offer" : "Create Offer"}
         footer={
-          
           <Button
-            onClick={() => setOpenBuyerInfoDialog(true)}
+            onClick={() => {
+              setOpenBuyerInfoDialog(true)
+            }}
             disabled={loading}
             type="button"
             className="w-full bg-surface-primary text-white"
           >
             {loading ? (
               <FontAwesomeIcon icon={faSpinner} spin className="text-lg" />
+            ) : hasUserOffer ? (
+              "Update"
             ) : (
-              "Submit Offer"
+              "Submit"
             )}
           </Button>
         }
       >
-        <form id="offer-form" onSubmit={() => {}} className="flex flex-col gap-4">
+        <form id="offer-form" onSubmit={() => { }} className="flex flex-col gap-4">
           {/* Court Count */}
           <div>
             <label className="block text-sm font-medium mb-1">Court Count </label>
@@ -287,7 +327,7 @@ export default function SportDetailPostPage() {
       <BuyerInfoDialog open={openBuyerInfoDialog} setOpen={setOpenBuyerInfoDialog} ctaButtonDidTap={() => {
         setOpenBuyerInfoDialog(false);
         handleSubmit()
-        }}/>
+      }} />
     </div>
   );
 }
