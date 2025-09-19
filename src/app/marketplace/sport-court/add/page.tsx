@@ -9,6 +9,7 @@ import { CalendarDaysIcon, ChevronLeft, Loader2, MapIcon, SearchIcon } from "luc
 import apiClient from "@/lib/apiClient";
 import { format } from "date-fns";
 import { DateTimePicker } from "@/components/ui/datetimepicker";
+import { buildUtcDate } from "@/lib/utils";
 
 interface Location {
     id: string;
@@ -92,26 +93,22 @@ export default function AddPostPage() {
             }
 
             // Construct datetime
-            const startDateFormat = formatDate(form.startDate);
-            const endDateFormat = formatDate(form.endDate);
-            const startDateTimeString = `${startDateFormat}T${form.startTime}:00.000Z`; // Adding seconds and timezone for precision
-            const endDateTimeString = `${endDateFormat}T${form.endTime}:00.000Z`;
-            const startDateTime = new Date(startDateTimeString);
-            const endDateTime = new Date(endDateTimeString);
+            const startDateTime = buildUtcDate(form.startDate, form.startTime);
+            const endDateTime = buildUtcDate(form.endDate, form.endTime);
 
             if (endDateTime <= startDateTime) {
-                alert("End time must be greater than start time");
-                setLoading(false);
-                return;
+            alert("End time must be greater than start time");
+            setLoading(false);
+            return;
             }
 
             const payload = {
-                locationId: form.locationId,
-                minPrice: Number(form.minPrice),
-                itemCount: Number(form.itemCount),
-                startDateTime,
-                endDateTime,
-                sportType: form.sportType,
+            locationId: form.locationId,
+            minPrice: Number(form.minPrice),
+            itemCount: Number(form.itemCount),
+            startDateTime,
+            endDateTime,
+            sportType: form.sportType,
             };
 
             await apiClient.post("/api/post/create", payload);
