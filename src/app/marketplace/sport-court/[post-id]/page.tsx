@@ -175,8 +175,7 @@ export default function SportDetailPostPage() {
             ))}
           </div>
         ) : (
-          post &&
-          offers.length > 0 && (
+          post && (
             <OfferList
               offers={offers}
               userFullName={post.seller?.name ?? "Unknown User"}

@@ -63,55 +63,63 @@ export default function OfferList({
     return (
         <div className="mt-6">
             <h2 className="text-lg font-semibold mb-3">Offers</h2>
-            <div className="space-y-2">
-                {offers.map((offer) => {
-                    const pricePerCourt = Number(offer.price);
-                    const totalPrice = pricePerCourt * offer.itemCount;
+            {offers.length > 0 ? (
+                <div className="space-y-2">
+                    {offers.map((offer) => {
+                        const pricePerCourt = Number(offer.price);
+                        const totalPrice = pricePerCourt * offer.itemCount;
 
-                    return (
-                        <div
-                            key={offer.id}
-                            className={`flex items-center justify-between rounded-lg px-4 py-3 shadow-sm ${offer.buyer.userId === userId
-                                ? "border-2 border-surface-primary bg-blue-50"
-                                : "border border-gray-200 bg-white"
-                                }`}
-                        >
-                            {/* Left section */}
-                            <div className="flex flex-col">
-                                <span className="font-medium text-gray-900">{offer.buyer.name}</span>
-                                <span className="text-sm text-gray-600">
-                                    {offer.itemCount} Court - Rp{" "}
-                                    {pricePerCourt.toLocaleString("id-ID")}/pcs
-                                </span>
-                            </div>
+                        return (
+                            <div
+                                key={offer.id}
+                                className={`flex items-center justify-between rounded-lg px-4 py-3 shadow-sm ${offer.buyer.userId === userId
+                                        ? "border-2 border-surface-primary bg-blue-50"
+                                        : "border border-gray-200 bg-white"
+                                    }`}
+                            >
+                                {/* Left section */}
+                                <div className="flex flex-col">
+                                    <span className="font-medium text-gray-900">{offer.buyer.name}</span>
+                                    <span className="text-sm text-gray-600">
+                                        {offer.itemCount} Court - Rp{" "}
+                                        {pricePerCourt.toLocaleString("id-ID")}/pcs
+                                    </span>
+                                </div>
 
-                            {/* Right section */}
-                            <div className="flex items-center gap-3">
-                                <span className="font-bold text-gray-900">
-                                    Rp {totalPrice.toLocaleString("id-ID")}
-                                </span>
-                                {sellerId == userId && <button
-                                    onClick={() => {
-                                        setWhatsappDataModel(
-                                            {
-                                                buyerName: offer.buyer.name,
-                                                courtCount: offer.itemCount,
-                                                pricePerCourt,
-                                                totalPrice,
-                                                phoneNumber: offer.buyer.phone
-                                            }
-                                        )
-                                        setOpenSellerInfoDialog(true)
-                                    }}
-                                    className="p-1 text-gray-600 hover:text-blue-500"
-                                >
-                                    <MessageCircle className="h-5 w-5" color="#2DD46A" />
-                                </button>}
+                                {/* Right section */}
+                                <div className="flex items-center gap-3">
+                                    <span className="font-bold text-gray-900">
+                                        Rp {totalPrice.toLocaleString("id-ID")}
+                                    </span>
+                                    {sellerId == userId && (
+                                        <button
+                                            onClick={() => {
+                                                setWhatsappDataModel({
+                                                    buyerName: offer.buyer.name,
+                                                    courtCount: offer.itemCount,
+                                                    pricePerCourt,
+                                                    totalPrice,
+                                                    phoneNumber: offer.buyer.phone,
+                                                });
+                                                setOpenSellerInfoDialog(true);
+                                            }}
+                                            className="p-1 text-gray-600 hover:text-blue-500"
+                                        >
+                                            <MessageCircle className="h-5 w-5" color="#2DD46A" />
+                                        </button>
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    );
-                })}
-            </div>
+                        );
+                    })}
+                </div>
+            ) : (
+                <div className="flex flex-col items-center justify-center py-10 text-gray-500 bg-gray-50 rounded-lg border border-dashed">
+                    <MessageCircle className="h-10 w-10 mb-2 opacity-60" />
+                    <p className="text-sm font-medium">No offers yet</p>
+                    {sellerId == userId ? (<p className="text-xs">Share your post for better reach!</p>): ((<p className="text-xs">Be the first to make an offer!</p>))}
+                </div>
+            )}
 
             <SellerInfoDialog
                 open={openSellerInfoDialog}
