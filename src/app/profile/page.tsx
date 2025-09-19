@@ -11,8 +11,8 @@ import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useUser } from "@/app/context/UserContext"
 
 const menus = [
-  { name: "My Post", href: "/dashboard/posts", icon: FileText },
-  { name: "My Offer", href: "/dashboard/offers", icon: Tag },
+  { name: "My Post", href: "/profile/my-post", icon: FileText },
+  { name: "My Offer", href: "/profile/my-offer", icon: Tag },
 ];
 
 export default function ProfilePage() {
