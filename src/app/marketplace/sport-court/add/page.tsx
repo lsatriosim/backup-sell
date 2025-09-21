@@ -203,7 +203,7 @@ export default function AddPostPage() {
                                 />
                                 {locations
                                     .filter((loc) =>
-                                        loc.name.toLowerCase().includes(locationFilter.toLowerCase())
+                                        loc.name.toLowerCase().includes(locationFilter.toLowerCase()) || loc.addressDescription.toLowerCase().includes(locationFilter.toLowerCase())
                                     )
                                     .map((loc) => (
                                         <div
