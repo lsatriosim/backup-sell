@@ -55,3 +55,9 @@ export interface DeletePostDTO {
     id: string;
     sellerId: string;
 }
+
+export interface UpdatePostStatusDTO {
+    id: string;
+    sellerId: string;
+    status: string;
+}

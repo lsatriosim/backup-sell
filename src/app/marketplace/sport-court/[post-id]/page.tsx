@@ -7,7 +7,7 @@ import OfferList from "@/components/OfferList";
 import BookingCardSkeleton from "@/components/BookingCardSkeleton";
 import OfferCardSkeleton from "@/components/OfferCardSkeleton";
 import apiClient from "@/lib/apiClient";
-import { ChevronLeft, Plus, HandCoins, PencilIcon, Share2, Trash2 } from "lucide-react";
+import { ChevronLeft, Plus, HandCoins, PencilIcon, Share2, Trash2, MoreVertical, RefreshCcw } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,13 @@ import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { LoginRequiredDialog } from "@/components/LoginRequiredDialog";
 import { useUser } from "@/app/context/UserContext";
 import BuyerInfoDialog from "@/components/BuyerInfoDialog";
-import { enUS, id } from "date-fns/locale";
+import { id } from "date-fns/locale";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { DeleteConfirmationDialog } from "@/components/DeleteConfirmationDialog";
 
@@ -88,6 +94,22 @@ export default function SportDetailPostPage() {
       router.back();
     } catch (err: any) {
       alert("Failed to delete post")
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const handleUpdateStatus = async () => {
+    setLoading(true);
+    try {
+      await apiClient.post(`/api/post/update-status`, {
+        id: postId,
+        sellerId: post?.seller.id,
+        status: post?.status == "OPEN" ? "CLOSED" : "OPEN"
+      });
+      fetchPostDetail();
+    } catch (err: any) {
+      alert("Failed to update post status")
     } finally {
       setLoading(false);
     }
@@ -196,24 +218,43 @@ Checkout in this url:
           {post?.sportType ?? "Sport Court"}
         </h1>
 
-        {userId === post?.seller.id && (
-          <div className="flex flex-row">
-            <Trash2
-              className="h-6 w-6 cursor-pointer mr-2 text-red-400"
-              onClick={() => setOpenDeleteDialog(true)}
-            />
-
-            <PencilIcon
-              className="h-6 w-6 cursor-pointer mr-2"
-              onClick={() => router.push(`/marketplace/sport-court/${postId}/edit`)}
-            />
-          </div>
-        )}
-
         <Share2
           className="h-6 w-6 cursor-pointer"
           onClick={handleShare}
         />
+
+        {userId === post?.seller.id && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <MoreVertical className="h-6 w-6 cursor-pointer ml-2" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => handleUpdateStatus()}
+              >
+                <RefreshCcw className="h-4 w-4 ml-2" />
+                {post.status == "OPEN" ? "Closed Post" : "Open Post"}
+              </DropdownMenuItem>
+
+              <DropdownMenuItem
+                onClick={() =>
+                  router.push(`/marketplace/sport-court/${postId}/edit`)
+                }
+              >
+                <PencilIcon className="h-4 w-4 ml-2" />
+                Edit
+              </DropdownMenuItem>
+
+              <DropdownMenuItem
+                className="text-red-500 focus:text-red-600"
+                onClick={() => setOpenDeleteDialog(true)}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </header>
       <div className="bg-surface-primary w-full h-60 rounded-b-xl"></div>
 
@@ -267,7 +308,7 @@ Checkout in this url:
       </main>
 
       {/* Floating Create Offer Button */}
-      {post?.seller.id != userId &&
+      {(post?.seller.id != userId && post?.status == "OPEN") &&
         <button
           onClick={() => {
             if (hasUserOffer) {
