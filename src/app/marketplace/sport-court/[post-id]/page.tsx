@@ -7,7 +7,7 @@ import OfferList from "@/components/OfferList";
 import BookingCardSkeleton from "@/components/BookingCardSkeleton";
 import OfferCardSkeleton from "@/components/OfferCardSkeleton";
 import apiClient from "@/lib/apiClient";
-import { ChevronLeft, Plus, HandCoins, PencilIcon } from "lucide-react";
+import { ChevronLeft, Plus, HandCoins, PencilIcon, Share2, Trash2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,9 @@ import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { LoginRequiredDialog } from "@/components/LoginRequiredDialog";
 import { useUser } from "@/app/context/UserContext";
 import BuyerInfoDialog from "@/components/BuyerInfoDialog";
-import { enUS } from "date-fns/locale";
+import { enUS, id } from "date-fns/locale";
+import { format } from "date-fns";
+import { DeleteConfirmationDialog } from "@/components/DeleteConfirmationDialog";
 
 export default function SportDetailPostPage() {
   const router = useRouter();
@@ -30,6 +32,7 @@ export default function SportDetailPostPage() {
   const [offerLoading, setOfferLoading] = useState(false);
   const [apiError, setApiError] = useState("");
   const [openLoginDialog, setOpenLoginDialog] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openBuyerInfoDialog, setOpenBuyerInfoDialog] = useState(false);
 
   const hasUserOffer = offers.some((offer) => offer.buyer.userId === userId);
@@ -74,6 +77,55 @@ export default function SportDetailPostPage() {
       setOfferLoading(false);
     }
   }, [postId]);
+
+  const handleDelete = async () => {
+    setLoading(true);
+    try {
+      await apiClient.post(`/api/post/delete`, {
+        id: postId,
+        sellerId: post?.seller.id
+      });
+      router.back();
+    } catch (err: any) {
+      alert("Failed to delete post")
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const handleShare = async () => {
+    if (!post) return;
+
+    const formattedDate = format(new Date(post.startDateTime), "dd-MM-yyyy HH:mm", { locale: id });
+    const formattedPrice = new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumFractionDigits: 0,
+    }).format(post.minPrice ?? 0);
+
+    const message = `*Want to Sell* 
+${post.location?.name ?? "Unknown Location"}
+${post.location?.region?.name ?? ""}, ${post.location?.region?.city?.name ?? ""}
+${formattedDate}
+Min Price: ${formattedPrice}
+
+Checkout in this url:
+"${process.env.NEXT_PUBLIC_BASE_URL}/marketplace/sport-court/${postId}"`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Want to Sell",
+          text: message,
+        });
+      } catch (err) {
+        console.error("Share cancelled", err);
+      }
+    } else {
+      await navigator.clipboard.writeText(message);
+      alert("Share message copied to clipboard ✅");
+    }
+  };
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -136,7 +188,7 @@ export default function SportDetailPostPage() {
       {/* Header */}
       <header className="bg-surface-primary text-white px-4 py-3 flex items-center">
         <ChevronLeft
-          className="h-8 w-8 cursor-pointer"
+          className="h-6 w-6 cursor-pointer"
           onClick={() => router.back()}
         />
 
@@ -145,13 +197,24 @@ export default function SportDetailPostPage() {
         </h1>
 
         {userId === post?.seller.id && (
-          <PencilIcon
-            className="h-8 w-8 cursor-pointer"
-            onClick={() => router.push(`/marketplace/sport-court/${postId}/edit`)}
-          />
-        )}
-      </header>
+          <div className="flex flex-row">
+            <Trash2
+              className="h-6 w-6 cursor-pointer mr-2 text-red-400"
+              onClick={() => setOpenDeleteDialog(true)}
+            />
 
+            <PencilIcon
+              className="h-6 w-6 cursor-pointer mr-2"
+              onClick={() => router.push(`/marketplace/sport-court/${postId}/edit`)}
+            />
+          </div>
+        )}
+
+        <Share2
+          className="h-6 w-6 cursor-pointer"
+          onClick={handleShare}
+        />
+      </header>
       <div className="bg-surface-primary w-full h-60 rounded-b-xl"></div>
 
       {/* Main content */}
@@ -333,6 +396,7 @@ export default function SportDetailPostPage() {
       </CustomDialog>
 
       <LoginRequiredDialog open={openLoginDialog} onOpenChange={setOpenLoginDialog} />
+      <DeleteConfirmationDialog open={openDeleteDialog} onOpenChange={setOpenDeleteDialog} onDeleteConfirm={handleDelete} />
       <BuyerInfoDialog open={openBuyerInfoDialog} setOpen={setOpenBuyerInfoDialog} ctaButtonDidTap={() => {
         setOpenBuyerInfoDialog(false);
         handleSubmit()
@@ -340,3 +404,7 @@ export default function SportDetailPostPage() {
     </div>
   );
 }
+function async() {
+  throw new Error("Function not implemented.");
+}
+

@@ -50,3 +50,8 @@ export interface CreatePostDto {
     endDateTime: Date;
     sportType: string;
 }
+
+export interface DeletePostDTO {
+    id: string;
+    sellerId: string;
+}

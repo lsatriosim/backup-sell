@@ -55,6 +55,8 @@ export function DateTimePicker({
                             mode="single"
                             selected={date}
                             captionLayout="dropdown"
+                            startMonth={new Date()}
+                            disabled={{ before: new Date() }}
                             onSelect={(date) => {
                                 onDateChange(date)
                                 onOpenChange(false)
