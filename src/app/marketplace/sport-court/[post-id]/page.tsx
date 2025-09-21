@@ -44,6 +44,20 @@ export default function SportDetailPostPage() {
   const hasUserOffer = offers.some((offer) => offer.buyer.userId === userId);
   const userOffer = offers.find((offer) => offer.buyer.userId === userId);
 
+  //Infobox message
+  const shouldShowMessage =
+    !offerLoading && !postLoading && (hasUserOffer || (post?.seller.id === userId && offers.length > 0));
+
+  let messageText: string | null = null;
+
+  if (hasUserOffer) {
+    messageText =
+      "You’ve already placed an offer! 🎉 Sit tight while the seller gets in touch. If you’d like, you can tweak your offer anytime using the floating button.";
+  } else if (post?.seller.id === userId && offers.length > 0) {
+    messageText =
+      "Pick the offer you like best and reach out with a quick message using the button.";
+  }
+
   // modal state
   const [openModal, setOpenModal] = useState(false);
 
@@ -269,6 +283,12 @@ Checkout in this url:
               post={post}
             />
           )
+        )}
+
+        {shouldShowMessage && messageText && (
+          <div className="p-2 border-2 border-surface-primary bg-blue-300 mt-3 rounded-lg">
+            <p className="text-sm">{messageText}</p>
+          </div>
         )}
 
         {/* OfferList / Skeleton */}
