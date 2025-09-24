@@ -49,7 +49,7 @@ export default function LoginPage() {
             if (shouldBack == "true") {
                 router.back();
             } else {
-                router.push('/home');
+                router.push('/marketplace');
             }
         } catch (err) {
             if (axios.isAxiosError(err)) {

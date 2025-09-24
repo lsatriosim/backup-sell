@@ -56,7 +56,7 @@ export default function RegisterPage() {
                 '/api/auth/register',
                 requestBody
             );
-            router.push('/home');
+            router.push('/marketplace');
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 setErrorMessage(err.response?.data?.data?.error);

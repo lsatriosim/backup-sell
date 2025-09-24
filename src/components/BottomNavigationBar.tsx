@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { Home, LayoutDashboard, ShoppingBag, User } from "lucide-react";
 
 const navItems = [
-  { name: "Home", href: "/home", icon: Home },
   { name: "Marketplace", href: "/marketplace", icon: ShoppingBag },
   { name: "Me", href: "/profile", icon: User },
 ];
