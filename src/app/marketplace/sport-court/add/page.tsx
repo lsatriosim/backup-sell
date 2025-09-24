@@ -97,18 +97,18 @@ export default function AddPostPage() {
             const endDateTime = buildUtcDate(form.endDate, form.endTime);
 
             if (endDateTime <= startDateTime) {
-            alert("End time must be greater than start time");
-            setLoading(false);
-            return;
+                alert("End time must be greater than start time");
+                setLoading(false);
+                return;
             }
 
             const payload = {
-            locationId: form.locationId,
-            minPrice: Number(form.minPrice),
-            itemCount: Number(form.itemCount),
-            startDateTime,
-            endDateTime,
-            sportType: form.sportType,
+                locationId: form.locationId,
+                minPrice: Number(form.minPrice),
+                itemCount: Number(form.itemCount),
+                startDateTime,
+                endDateTime,
+                sportType: form.sportType,
             };
 
             await apiClient.post("/api/post/create", payload);
@@ -170,6 +170,17 @@ export default function AddPostPage() {
                         <p className="text-base text-neutral-900 mb-1 font-semibold">
                             Court Location
                         </p>
+                        <div className="p-2 border-2 border-surface-primary/10 bg-blue-100 mb-2 rounded-lg">
+                            <p className="text-sm">Can't found the court location? Please inform admin to add the court location.</p>
+                            <a
+                                href="https://wa.me/6285117670921"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-blue-600 underline hover:text-blue-800"
+                            >
+                                Contact Admin
+                            </a>
+                        </div>
                         <Popover open={openLocation} onOpenChange={setOpenLocation}>
                             <PopoverTrigger asChild>
                                 <Button

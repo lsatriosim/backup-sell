@@ -76,7 +76,7 @@ export default function RegisterPage() {
     }, [errorMessage]);
 
     return (
-        <div className="flex flex-col min-h-screen bg-white">
+        <div className="flex flex-col min-h-screen bg-neutral-100">
             {/* Top background with text */}
             <div className="relative h-[40vh] w-full z-0">
                 <Image
@@ -94,7 +94,7 @@ export default function RegisterPage() {
             </div>
 
             {/* Signup form */}
-            <div className="flex-1 bg-neutral-100 rounded-t-3xl -mt-6 shadow-lg px-6 py-2 z-1">
+            <div className="flex-1 bg-neutral-100 rounded-t-3xl -mt-6 px-6 py-2 z-1">
                 <h2 className="text-2xl font-bold mb-6 text-neutral-950 pt-4">Sign Up</h2>
                 <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
                     <input
@@ -126,6 +126,7 @@ export default function RegisterPage() {
                         disabled={loading}
                         className="w-full rounded-md border px-3 py-2 text-neutral-600 disabled:opacity-50"
                     />
+                    <p className="text-xs text-gray-500 -mt-3 px-1">This phone number will be used to contact you through WhatsApp.</p>
 
                     {/* Password */}
                     <div className="relative">
