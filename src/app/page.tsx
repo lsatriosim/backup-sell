@@ -72,11 +72,7 @@ export default function LandingPage() {
         >
           <Button
             onClick={() => {
-              if (userContext.userId == null) {
-                router.push("/login");
-              } else {
-                router.push("/marketplace");
-              }
+              router.push("/marketplace");
             }}
             className="bg-surface-primary text-white px-6 py-3 rounded-md"
           >
