@@ -2,16 +2,9 @@
 import PostCard from "@/components/PostCard";
 import { PostItemResponse } from "../../model/PostModel";
 import { useCallback, useEffect, useState } from "react";
-import { CalendarDaysIcon, Clock, MapIcon, SearchIcon, Plus, ChevronLeft, MessageCircle } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { Button } from "@/components/ui/button";
-import { format } from "date-fns";
-import { OnSelectHandler } from "react-day-picker";
+import { Plus, ChevronLeft, MessageCircle } from "lucide-react";
 import apiClient from "@/lib/apiClient";
 import PostCardSkeleton from "@/components/PostCardSkeleton";
-import { CityRegionFilterOptionResponse } from "../../model/LocationModel";
-import FilterRowSkeleton from "@/components/FilterRowSkeleton";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/app/context/UserContext";
 import { LoginRequiredDialog } from "@/components/LoginRequiredDialog";

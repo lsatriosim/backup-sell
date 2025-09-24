@@ -6,11 +6,9 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, Loader2, MapIcon, SearchIcon } from "lucide-react";
 import apiClient from "@/lib/apiClient";
-import { format } from "date-fns";
 import { DateTimePicker } from "@/components/ui/datetimepicker";
 import { useUser } from "@/app/context/UserContext";
 import { PostItemResponse } from "@/app/model/PostModel";
-import { enUS } from "date-fns/locale";
 
 interface Location {
     id: string;
@@ -24,7 +22,6 @@ export default function EditPostPage() {
     const postId = params["post-id"] as string;
 
     // =============== STATES ===============
-    const { userId } = useUser();
     const [post, setPost] = useState<PostItemResponse | undefined>(undefined);
     const [loading, setLoading] = useState(false);
     const [locationListLoading, setLocationListLoading] = useState(false);
@@ -90,6 +87,7 @@ export default function EditPostPage() {
                 sportType: data.sportType,
             });
         } catch (err) {
+            console.log(err);
             alert(`Failed to fetch post detail`);
         } finally {
             setLoading(false);
@@ -173,6 +171,7 @@ export default function EditPostPage() {
             await apiClient.post("/api/post/update", payload);
             router.back();
         } catch (err) {
+            console.log(err);
             alert("Failed to update post");
         } finally {
             setLoading(false);

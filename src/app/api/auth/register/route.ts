@@ -7,7 +7,8 @@ export const POST = withoutAuth(async (request: NextRequest) => {
 
     try {
         requestBody = await request.json();
-    } catch (_) {
+    } catch (error) {
+        console.log(error);
         return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
     }
 
@@ -17,7 +18,8 @@ export const POST = withoutAuth(async (request: NextRequest) => {
 
     try {
         return await forwardToBackend(request, null, '/api/auth/register', 'POST', requestBody);
-    } catch (_) {
+    } catch (error) {
+        console.log(error);
         return NextResponse.json({ error: 'Failed to register account due to server error.' }, { status: 500 });
     }
 });

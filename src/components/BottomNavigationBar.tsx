@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, LayoutDashboard, ShoppingBag, User } from "lucide-react";
+import { ShoppingBag, User } from "lucide-react";
 
 const navItems = [
   { name: "Marketplace", href: "/marketplace", icon: ShoppingBag },

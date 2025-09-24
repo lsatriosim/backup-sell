@@ -19,7 +19,6 @@ export default function ProfilePage() {
   const [user, setUserProfile] = useState<ProfileUser | null>(null);
   const userContext = useUser();
   const [loading, setLoading] = useState(false);
-  const [apiError, setApiError] = useState("");
   const [showModal, setShowModal] = useState(false);
   const router = useRouter();
 
@@ -30,7 +29,7 @@ export default function ProfilePage() {
       const userProfile: ProfileUser = response.data;
       setUserProfile(userProfile);
     } catch (err) {
-      setApiError(`Not logged in`);
+      console.log(err)
       setUserProfile(null); // fallback state
     } finally {
       setLoading(false);
@@ -50,12 +49,13 @@ export default function ProfilePage() {
       userContext.deleteUserId();
       router.push("/login");
     } catch (err) {
-      setApiError(`Failed to log out`);
+      console.log(err);
+      alert(`Failed to log out`);
     } finally {
       setLoading(false);
       setShowModal(false);
     }
-  }, [router]);
+  }, [router, userContext]);
 
   return (
     <div className="min-h-screen bg-neutral-50">

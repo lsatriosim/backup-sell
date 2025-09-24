@@ -2,12 +2,10 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { CalendarDaysIcon, ChevronLeft, Loader2, MapIcon, SearchIcon } from "lucide-react";
+import { ChevronLeft, Loader2, MapIcon, SearchIcon } from "lucide-react";
 import apiClient from "@/lib/apiClient";
-import { format } from "date-fns";
 import { DateTimePicker } from "@/components/ui/datetimepicker";
 import { buildUtcDate } from "@/lib/utils";
 
@@ -63,13 +61,6 @@ export default function AddPostPage() {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setForm((prev) => ({ ...prev, [name]: value }));
-    };
-
-    const formatDate = (date: Date) => {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -171,7 +162,7 @@ export default function AddPostPage() {
                             Court Location
                         </p>
                         <div className="p-2 border-2 border-surface-primary/10 bg-blue-100 mb-2 rounded-lg">
-                            <p className="text-sm">Can't found the court location? Please inform admin to add the court location.</p>
+                            <p className="text-sm">Can&apos;t found the court location? Please inform admin to add the court location.</p>
                             <a
                                 href="https://wa.me/6285117670921"
                                 target="_blank"

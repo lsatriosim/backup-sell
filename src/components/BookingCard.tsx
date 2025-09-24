@@ -6,7 +6,7 @@ interface BookingCardProps {
 }
 
 export default function BookingCard({ post }: BookingCardProps) {
-  const { id, location, startDateTime, endDateTime, minPrice, itemCount, seller, status } = post;
+  const { location, startDateTime, endDateTime, minPrice, itemCount, seller, status } = post;
 
   // Format date & time
   const date = new Date(startDateTime).toLocaleDateString("en-ID", {

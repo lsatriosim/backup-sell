@@ -28,7 +28,6 @@ export default function MarketplacePage() {
   type LocationFilter = { id: string; name: string; type: "city" | "region" } | null;
   const [locationFilter, setLocationFilter] = useState<LocationFilter>(null);
   const [locationOptions, setLocationOptions] = useState<CityRegionFilterOptionResponse[]>([]);
-  const [apiError, setApiError] = useState("");
   const router = useRouter();
   const userContext = useUser();
   const [showLoginRequiredPopUp, setShowLoginRequiredPopUp] = useState(false);
@@ -105,8 +104,8 @@ export default function MarketplacePage() {
       const response = await apiClient.get(`/api/location/get-cities-by-regions`);
       const data: CityRegionFilterOptionResponse[] = response.data;
       setLocationOptions(data);
-    } catch {
-      setApiError(`Failed to fetch location filter option`);
+    } catch(err) {
+      console.log(err)
     } finally {
       setFilterLoading(false);
     }
@@ -120,7 +119,7 @@ export default function MarketplacePage() {
       const response = await apiClient.get(`/api/post/list/${formattedDate}`);
       setPosts(response.data);
     } catch {
-      setApiError(`Failed to fetch post list`);
+      alert(`Failed to fetch post list`);
     } finally {
       setLoading(false);
     }

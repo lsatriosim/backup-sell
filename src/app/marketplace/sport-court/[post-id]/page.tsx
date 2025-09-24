@@ -36,7 +36,6 @@ export default function SportDetailPostPage() {
   const [offers, setOffers] = useState<OfferItemResponse[]>([]);
   const [postLoading, setPostLoading] = useState(false);
   const [offerLoading, setOfferLoading] = useState(false);
-  const [apiError, setApiError] = useState("");
   const [openLoginDialog, setOpenLoginDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openBuyerInfoDialog, setOpenBuyerInfoDialog] = useState(false);
@@ -79,7 +78,8 @@ export default function SportDetailPostPage() {
         price: data.minPrice ?? 0, // fallback to 0 if undefined
       }));
     } catch (err) {
-      setApiError(`Failed to fetch post detail`);
+      console.log(err);
+      alert(`Failed to fetch post detail`);
     } finally {
       setPostLoading(false);
     }
@@ -92,7 +92,8 @@ export default function SportDetailPostPage() {
       const data: OfferItemResponse[] = response.data;
       setOffers(data);
     } catch (err) {
-      setApiError(`Failed to fetch offer list`);
+      console.log(err);
+      alert(`Failed to fetch offer list`);
     } finally {
       setOfferLoading(false);
     }
@@ -106,7 +107,8 @@ export default function SportDetailPostPage() {
         sellerId: post?.seller.id
       });
       router.back();
-    } catch (err: any) {
+    } catch (err) {
+      console.log(err);
       alert("Failed to delete post")
     } finally {
       setLoading(false);
@@ -122,7 +124,8 @@ export default function SportDetailPostPage() {
         status: post?.status == "OPEN" ? "CLOSED" : "OPEN"
       });
       fetchPostDetail();
-    } catch (err: any) {
+    } catch (err) {
+      console.log(err);
       alert("Failed to update post status")
     } finally {
       setLoading(false);
@@ -189,6 +192,7 @@ Checkout in this url:
       setOpenModal(false);
       setOpenBuyerInfoDialog(false); // close disclaimer too
       fetchOfferDetail();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       if (err.response?.status === 401) {
         setOpenLoginDialog(true);
@@ -465,7 +469,5 @@ Checkout in this url:
     </div>
   );
 }
-function async() {
-  throw new Error("Function not implemented.");
-}
+
 

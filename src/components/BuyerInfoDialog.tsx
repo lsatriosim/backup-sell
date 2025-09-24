@@ -39,7 +39,6 @@ export default function BuyerInfoDialog({ open, setOpen, ctaButtonDidTap }: Buye
     </ul>
   )
 
-  ctaButtonDidTap
   return (
     <CustomDialog
       open={open}
