@@ -57,89 +57,87 @@ export function withoutAuth(handler: NonAuthenticatedApiHandler) {
     }
 }
 
-// You can also create a helper function to forward the request to your backend.
-// This reduces more boilerplate.
+/**
+ * Forward request to backend API and safely return JSON
+ * - Removes problematic headers like content-encoding/content-length
+ * - Handles optional token
+ */
 export async function forwardToBackend(
-    request: NextRequest,
-    token: string | null,
-    backendPath: string,
-    method: string,
-    body?: unknown
+  request: NextRequest,
+  token: string | null,
+  backendPath: string,
+  method: string,
+  body?: unknown
 ) {
-    const backendUrl = process.env.BACKEND_URL;
-    const url = `${backendUrl}${backendPath}`;
+  const backendUrl = process.env.BACKEND_URL;
+  const url = `${backendUrl}${backendPath}`;
 
-    let headers: HeadersInit
+  let headers: HeadersInit;
 
-    if (token != null) {
-        headers = {
-            'Content-Type': 'application/json',
-            'Cookie': `token=${token}`, // Forward the token as a cookie
-            // If your backend expects Authorization: Bearer, use this instead:
-            // 'Authorization': `Bearer ${token}`,
-        };
-    } else {
-        headers = {
-            'Content-Type': 'application/json'
-        };
-    }
-
-    let requestBody = undefined;
-    if (body !== undefined) {
-        requestBody = JSON.stringify(body);
-    } else {
-        const requestMethod = request.method.toUpperCase();
-        const contentType = request.headers.get('content-type');
-
-        const isMethodThatCanHaveBody = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(requestMethod);
-        const isJsonContentType = contentType?.includes('application/json');
-
-        if (isMethodThatCanHaveBody && isJsonContentType) {
-            try {
-                const jsonContent = await request.json();
-                requestBody = JSON.stringify(jsonContent);
-            } catch (e: unknown) {
-                if (e instanceof SyntaxError && e.message.includes('Unexpected end of JSON input')) {
-                    console.warn(`[forwardToBackend] Empty or malformed JSON body for ${request.method} ${request.url}. Proceeding without body.`);
-                } else {
-                    console.error(`[forwardToBackend] Error parsing JSON body for ${request.method} ${request.url}:`, e);
-                }
-            }
-        }
-    }
-
-
-    const init: RequestInit = {
-        method: method,
-        headers: headers,
-        body: requestBody,
-        // Ensure credentials are sent with cross-origin requests if needed by backend (though cookie usually suffices)
-        // credentials: 'include',
-        // Caching control for revalidation
-        cache: request.method === 'GET' ? 'no-store' : undefined, // Never cache GETs hitting dynamic data
+  if (token != null) {
+    headers = {
+      'Content-Type': 'application/json',
+      'Cookie': `token=${token}`,
     };
+  } else {
+    headers = {
+      'Content-Type': 'application/json',
+    };
+  }
 
-    try {
-        const backendResponse = await fetch(url, init);
-        const responseHeaders = new Headers();
-        backendResponse.headers.forEach((value, key) => {
-        // Check for 'Set-Cookie' header and append it.
-        if (key.toLowerCase() === 'set-cookie') {
-            responseHeaders.append(key, value);
+  let requestBody: string | undefined;
+  if (body !== undefined) {
+    requestBody = JSON.stringify(body);
+  } else {
+    const requestMethod = request.method.toUpperCase();
+    const contentType = request.headers.get('content-type');
+
+    const isMethodThatCanHaveBody = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(requestMethod);
+    const isJsonContentType = contentType?.includes('application/json');
+
+    if (isMethodThatCanHaveBody && isJsonContentType) {
+      try {
+        const jsonContent = await request.json();
+        requestBody = JSON.stringify(jsonContent);
+      } catch (e: unknown) {
+        if (e instanceof SyntaxError && e.message.includes('Unexpected end of JSON input')) {
+          console.warn(`[forwardToBackend] Empty or malformed JSON body for ${request.method} ${request.url}. Proceeding without body.`);
         } else {
-            // For all other headers, simply set them.
-            responseHeaders.set(key, value);
+          console.error(`[forwardToBackend] Error parsing JSON body for ${request.method} ${request.url}:`, e);
         }
-        });
-
-        const data = await backendResponse.json();
-
-        return NextResponse.json(data, { 
-            status: backendResponse.status, 
-            headers: responseHeaders
-        });
-    } catch (error) {
-        console.error(`Error forwarding request to backend ${url}:`, error);
-        return NextResponse.json({ message: 'Error communicating with backend' }, { status: 500 });
+      }
     }
+  }
+
+  const init: RequestInit = {
+    method: method,
+    headers,
+    body: requestBody,
+    cache: request.method === 'GET' ? 'no-store' : undefined,
+  };
+
+  try {
+    const backendResponse = await fetch(url, init);
+
+    // Strip problematic headers when re-wrapping JSON
+    const responseHeaders = new Headers();
+    backendResponse.headers.forEach((value, key) => {
+      const lowerKey = key.toLowerCase();
+      if (lowerKey === 'set-cookie') {
+        responseHeaders.append(key, value);
+      } else if (!['content-encoding', 'content-length', 'transfer-encoding'].includes(lowerKey)) {
+        responseHeaders.set(key, value);
+      }
+    });
+
+    const data = await backendResponse.json();
+
+    return NextResponse.json(data, {
+      status: backendResponse.status,
+      headers: responseHeaders,
+    });
+  } catch (error) {
+    console.error(`Error forwarding request to backend ${url}:`, error);
+    return NextResponse.json({ message: 'Error communicating with backend' }, { status: 500 });
+  }
 }
