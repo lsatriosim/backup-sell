@@ -5,7 +5,7 @@ import BottomNavWrapper from '@/components/BottomNavigationBarWrapper';
 
 export const metadata: Metadata = {
   title: 'Backup Sell — Community Resell Board',
-  description: 'Community board to resell padel court bookings. No transactions on-site.',
+  description: 'Platform to trade backup tickets and bookings',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
