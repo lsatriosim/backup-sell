@@ -146,10 +146,11 @@ export default function SportDetailPostPage() {
 ${post.location?.name ?? "Unknown Location"}
 ${post.location?.region?.name ?? ""}, ${post.location?.region?.city?.name ?? ""}
 ${formattedDate}
-Min Price: ${formattedPrice}
+Total Court: ${post.itemCount}
+Min Price: ${formattedPrice}/court
 
 Checkout in this url:
-"${process.env.NEXT_PUBLIC_BASE_URL}/marketplace/sport-court/${postId}"`;
+${process.env.NEXT_PUBLIC_BASE_URL}/marketplace/sport-court/${postId}`;
 
     if (navigator.share) {
       try {
